@@ -1,4 +1,0 @@
-Haidu evang
--osteby
-
-Lyapunov
