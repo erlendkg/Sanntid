@@ -2,8 +2,10 @@
 # python helloworld_python.py
 
 from threading import Thread
+import threading
 
 i = 0
+lock = threading.Lock()
 
 def someThreadFunction1():
 
@@ -13,9 +15,13 @@ def someThreadFunction1():
 #   (This is probably an effort to make you feel bad about typing the word "global")
     global i
 
-    for x in xrange(1,10):
-    	i = i + 1;
 
+    for x in xrange(1,10):
+        lock.aquire();
+        try:
+            i = i + 1;
+        finally:
+            lock.release();
 
 def someThreadFunction2():
 
@@ -25,8 +31,13 @@ def someThreadFunction2():
 #   (This is probably an effort to make you feel bad about typing the word "global")
     global i
 
+
     for x in xrange(1,10):
-    	i = i - 1;
+        lock.aquire();
+        try:
+            i = i - 1;
+        finally:
+            lock.release();
 
 
 
