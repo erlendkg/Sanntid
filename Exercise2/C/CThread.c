@@ -15,6 +15,7 @@ void* threadFunctionOne()
 
   for (k = 0; k < 1000000; k++)
   {
+    
     i++;
   }
 

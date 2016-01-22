@@ -52,7 +52,7 @@ func main()  {
   go goRoutineTwo(i)
 
 
-  time.Sleep(100*time.Millisecond)
+  time.Sleep(1000*time.Millisecond)
 
   temp := <-i
   fmt.Println(temp)
