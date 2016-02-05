@@ -5,12 +5,9 @@
 
 #include <assert.h>
 #include <stdlib.h>
-<<<<<<< HEAD
-#include<stdio.h>
+#include <stdio.h>
 #include <unistd.h>
-=======
 #include <pthread.h>
->>>>>>> 4c63b3d2e7cc3fc4e123aff5050e42218eadd3ee
 
 #define MOTOR_SPEED 2800
 
@@ -36,15 +33,13 @@ void* listen_for_button_input()
   int floor;
 
   while(1){
-
-    for(floor=1; floor<5; floor++){
+    for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
         E.DesiredFloor = floor;
       }
       if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
         E.DesiredFloor = floor;
       }
-
       }
     }
 }
