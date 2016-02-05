@@ -29,7 +29,10 @@ typedef struct El_status{
 } E;
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e87d536a7729abafd9aa677fcfb3affb214fff69
 
 
 
