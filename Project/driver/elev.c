@@ -28,7 +28,7 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
 void* button_plz()
 {
 
-int floor;
+  int floor;
 
   while(1){
 
@@ -36,9 +36,12 @@ int floor;
       if (elev_get_button_signal(2, floor) == 1){
         E.DesiredFloor = floor;
       }
+      if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
+        E.DesiredFloor = floor;
+      }
 
+      }
     }
-}
 }
 
 void elev_go_to_floor()
