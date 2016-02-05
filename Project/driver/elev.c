@@ -5,7 +5,12 @@
 
 #include <assert.h>
 #include <stdlib.h>
+<<<<<<< HEAD
+#include<stdio.h>
+#include <unistd.h>
+=======
 #include <pthread.h>
+>>>>>>> 4c63b3d2e7cc3fc4e123aff5050e42218eadd3ee
 
 #define MOTOR_SPEED 2800
 
