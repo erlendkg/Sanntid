@@ -46,12 +46,14 @@ void* listen_for_button_input()
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
           E.DesiredFloor = floor;
+          E.Available = 0;
           printf("Floor %d, Inside\n", floor+1);
           sleep(1);
       }
       if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
           printf("Floor %d, Outside\n", floor+1);
           E.DesiredFloor = floor;
+          E.Available = 0;
           sleep(1);
       }
       }
@@ -65,6 +67,7 @@ void* elev_go_to_floor()
 
     if (elev_get_floor_sensor_signal() != -1) {
       E.CurrentFloor = elev_get_floor_sensor_signal();
+
     }
 
     if (E.CurrentFloor > E.DesiredFloor){
@@ -73,12 +76,13 @@ void* elev_go_to_floor()
     }  else if (E.CurrentFloor < E.DesiredFloor){
       elev_set_motor_direction(DIRN_UP);
 
-    }  else if (E.CurrentFloor == E.DesiredFloor){
+    }  else if (E.CurrentFloor == E.DesiredFloor && E.Available == 0){
       elev_set_motor_direction(DIRN_STOP);
       E.Available = 1;
       elev_hold_door_open(DOOR_OPEN_TIME);
 
     }
+    elev_set_floor_indicator(E.CurrentFloor);
   }
 }
 
@@ -95,9 +99,8 @@ int elev_hold_door_open(int door_open_time)
   }
 
   elev_set_door_open_lamp(1);
-  sleep(door_open_time);
+  sleep(DOOR_OPEN_TIME);
   elev_set_door_open_lamp(0);
-
   return 1;
 }
 
@@ -146,8 +149,8 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
 
 
 void elev_set_floor_indicator(int floor) {
-    assert(floor >= 0);
-    assert(floor < N_FLOORS);
+    //assert(floor >= 0);
+    //assert(floor < N_FLOORS);
 
     // Binary encoding. One light must always be on.
     if (floor & 0x02) {
