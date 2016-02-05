@@ -7,7 +7,6 @@ void elev_go_to_floor()
       E.CurrentFloor = elev_get_floor_sensor_signal();
     }
 
-
     if (E.CurrentFloor > E.DesiredFloor){
       elev_set_motor_direction(DIRN_UP);
 
@@ -16,7 +15,8 @@ void elev_go_to_floor()
 
     }  else if (E.CurrentFloor == E.DesiredFloor){
       elev_set_motor_direction(DIRN_STOP);
-
+      E.Available = 1;
+      elev_door_
     }
   }
 }
