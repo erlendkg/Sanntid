@@ -20,18 +20,23 @@ typedef enum tag_elev_lamp_type {
     BUTTON_COMMAND = 2
 } elev_button_type_t;
 
-typedef struct{
+typedef struct El_status{
 
   int Num;
   int DesiredFloor;
   int CurrentFloor;
   int Done;
-} El_Status;
+} E;
+
+
 
 
 
 
 void elev_init(void);
+
+void elev_go_to_floor();
+int elev_hold_door_open(int door_open_time);
 
 void elev_set_motor_direction(elev_motor_direction_t dirn);
 void elev_set_button_lamp(elev_button_type_t button, int floor, int value);
