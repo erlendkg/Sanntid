@@ -5,18 +5,18 @@
 
 #include <assert.h>
 #include <stdlib.h>
-<<<<<<< HEAD
 
-#include<stdio.h>
+
+#include <stdio.h>
 #include <unistd.h>
 
 #include <pthread.h>
 
-=======
+
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
->>>>>>> 450fd0d04f1a194f8a39c9b890df62bf5461790f
+
 
 #define MOTOR_SPEED 2800
 
@@ -42,10 +42,7 @@ void* listen_for_button_input()
   int floor;
 
   while(1){
-<<<<<<< HEAD
 
-=======
->>>>>>> 450fd0d04f1a194f8a39c9b890df62bf5461790f
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
           E.CurrentFloor = floor;
@@ -54,13 +51,14 @@ void* listen_for_button_input()
       }
       if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
           printf("Floor %d, Outside\n", floor+1);
+          E.CurrentFloor = floor;
           sleep(1);
       }
       }
     }
 }
-/*
-void elev_go_to_floor()
+
+void* elev_go_to_floor()
 {
   while(1){
 
@@ -82,7 +80,7 @@ void elev_go_to_floor()
     }
   }
 }
-*/
+
 
 
 
