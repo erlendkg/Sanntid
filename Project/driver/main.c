@@ -4,33 +4,24 @@
 #include "elev.h"
 
 #include <unistd.h>
-
+#include<pthread.h>
 
 
 int main() {
 
-
+    pthread_t listen;
     elev_init();
     elev_button_type_t b;
 
-    while(1) {
-      if(elev_get_button_signal(b = BUTTON_CALL_UP, 1) == 1) {
-        printf("Hello up\n");
-        sleep(1);
-      }
-
-      if(elev_get_button_signal(b = BUTTON_CALL_DOWN, 1) == 1) {
-        printf("Hello down\n");
-        sleep(1);
-      }
-
-
-    }
-
-
-
-
+    pthread_create(&listen, NULL, listen_for_button_input, NULL);
     printf("Press STOP button to stop elevator and exit program.\n");
+
+    pthread_join(listen, NULL);
+
+
+
+
+
 
 /*
     elev_set_motor_direction(DIRN_UP);

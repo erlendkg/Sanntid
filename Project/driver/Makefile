@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -std=c11 -g -Wall -Wextra
 
 # Linker flags go here.
-LDFLAGS = -lcomedi -lm
+LDFLAGS = -lcomedi -lm -lpthread
 
 # list of sources
 ELEVSRC = elev.c io.c main.c
@@ -25,7 +25,7 @@ $(TARGET): $(ELEVOBJ)
 
 # Compile: create object files from C source files.
 %.o : %.c
-	$(CC) $(CFLAGS) -c $< -o $@ 
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # rule for cleaning re-compilable files.
 clean:

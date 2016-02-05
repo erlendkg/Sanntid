@@ -20,21 +20,15 @@ typedef enum tag_elev_lamp_type {
     BUTTON_COMMAND = 2
 } elev_button_type_t;
 
-typedef struct El_status{
+typedef struct {
 
   int Num;
   int DesiredFloor;
   int CurrentFloor;
   int Available;
-} E;
+} El_status;
 
-
-<<<<<<< HEAD
-
-=======
->>>>>>> e87d536a7729abafd9aa677fcfb3affb214fff69
-
-
+El_status E;
 
 void elev_init(void);
 
