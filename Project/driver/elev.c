@@ -45,13 +45,13 @@ void* listen_for_button_input()
 
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
-          E.CurrentFloor = floor;
+          E.DesiredFloor = floor;
           printf("Floor %d, Inside\n", floor+1);
           sleep(1);
       }
       if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
           printf("Floor %d, Outside\n", floor+1);
-          E.CurrentFloor = floor;
+          E.DesiredFloor = floor;
           sleep(1);
       }
       }
@@ -61,16 +61,17 @@ void* listen_for_button_input()
 void* elev_go_to_floor()
 {
   while(1){
+    printf("%d %d\n", E.CurrentFloor, E.DesiredFloor);
 
     if (elev_get_floor_sensor_signal() != -1) {
       E.CurrentFloor = elev_get_floor_sensor_signal();
     }
 
     if (E.CurrentFloor > E.DesiredFloor){
-      elev_set_motor_direction(DIRN_UP);
-
-    }  else if (E.CurrentFloor > E.DesiredFloor){
       elev_set_motor_direction(DIRN_DOWN);
+
+    }  else if (E.CurrentFloor < E.DesiredFloor){
+      elev_set_motor_direction(DIRN_UP);
 
     }  else if (E.CurrentFloor == E.DesiredFloor){
       elev_set_motor_direction(DIRN_STOP);

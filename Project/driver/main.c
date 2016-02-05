@@ -9,14 +9,20 @@
 
 int main() {
 
-    pthread_t listen;
+    pthread_t t_listen, t_go_to_floor;
     elev_init();
     elev_button_type_t b;
 
-    pthread_create(&listen, NULL, listen_for_button_input, NULL);
+    E.DesiredFloor = 1;
+    E.CurrentFloor = 3;
+
+
+    pthread_create(&t_listen, NULL, listen_for_button_input, NULL);
+    pthread_create(&t_go_to_floor, NULL, elev_go_to_floor, NULL);
     printf("Press STOP button to stop elevator and exit program.\n");
 
-    pthread_join(listen, NULL);
+    pthread_join(t_listen, NULL);
+    pthread_join(t_go_to_floor, NULL);
 
 
 
