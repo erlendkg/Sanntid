@@ -44,7 +44,7 @@ int elevator_hold_door_open(int door_open_time)
 }
 
 
-/Basic functions below
+//Basic functions below
 void elev_init(void) {
     int init_success = io_init();
     assert(init_success && "Unable to initialize elevator hardware!");
