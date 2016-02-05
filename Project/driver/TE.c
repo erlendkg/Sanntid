@@ -16,7 +16,7 @@ void elev_go_to_floor()
     }  else if (E.CurrentFloor == E.DesiredFloor){
       elev_set_motor_direction(DIRN_STOP);
       E.Available = 1;
-      elev_door_
+      elev_hold_door_open(DOOR_OPEN_TIME);
     }
   }
 }
