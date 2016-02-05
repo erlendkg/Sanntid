@@ -25,15 +25,9 @@ typedef struct El_status{
   int Num;
   int DesiredFloor;
   int CurrentFloor;
-<<<<<<< HEAD
-  int Done;
+  int Available;
 } E;
 
-
-=======
-  int Available;
-} El_Status;
->>>>>>> 4c63b3d2e7cc3fc4e123aff5050e42218eadd3ee
 
 
 
