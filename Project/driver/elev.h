@@ -25,15 +25,10 @@ typedef struct El_status{
   int Num;
   int DesiredFloor;
   int CurrentFloor;
-<<<<<<< HEAD
-  int Done;
+  int Available;
 } E;
 
 
-=======
-  int Available;
-} El_Status;
->>>>>>> 4c63b3d2e7cc3fc4e123aff5050e42218eadd3ee
 
 
 
@@ -48,7 +43,7 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value);
 void elev_set_floor_indicator(int floor);
 void elev_set_door_open_lamp(int value);
 void elev_set_stop_lamp(int value);
-void* button_plz();
+void* listen_for_button_input();
 void elev_go_to_floor();
 
 int elev_get_button_signal(elev_button_type_t button, int floor);

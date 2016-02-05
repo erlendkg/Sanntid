@@ -30,7 +30,7 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
-void* button_plz()
+void* listen_for_button_input()
 {
 
   int floor;
