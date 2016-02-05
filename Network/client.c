@@ -2,7 +2,7 @@
 
 El_Status E;
 
-void* receiveThread(void *sockfd)
+void* receive_thread(void *sockfd)
 {
   char message[32];
   int bytes_received;
@@ -31,6 +31,19 @@ void* receiveThread(void *sockfd)
       }
   }
 }
+
+void elev_go_to_floor()
+{
+  while(1){
+      if (E.CurrentFloor > E.DesiredFloor){
+        elev_set_motor_direction(DIRN_UP);
+      }  else if (E.CurrentFloor > E.DesiredFloor){
+        elev_set_motor_direction(DIRN_Down);
+      }
+      if (E.CurrentFloor == E.DesiredFloor)
+  }
+}
+
 
 int main()
 {
