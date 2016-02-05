@@ -1,5 +1,3 @@
-
-
 #include "elev.h"
 
 #include "channels.h"
@@ -7,8 +5,12 @@
 
 #include <assert.h>
 #include <stdlib.h>
+<<<<<<< HEAD
 #include<stdio.h>
 #include <unistd.h>
+=======
+#include <pthread.h>
+>>>>>>> 4c63b3d2e7cc3fc4e123aff5050e42218eadd3ee
 
 #define MOTOR_SPEED 2800
 
@@ -28,6 +30,21 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
+void* button_plz()
+{
+
+int floor;
+
+  while(1){
+
+    for(floor=1; floor<5; floor++){
+      if (elev_get_button_signal(2, floor) == 1){
+        E.DesiredFloor = floor;
+      }
+
+    }
+}
+}
 
 void elev_go_to_floor()
 {
@@ -47,9 +64,12 @@ void elev_go_to_floor()
       elev_set_motor_direction(DIRN_STOP);
       E.Available = 1;
       elev_hold_door_open(DOOR_OPEN_TIME);
+
     }
   }
 }
+
+
 
 int elev_hold_door_open(int door_open_time)
 {
@@ -96,7 +116,6 @@ void elev_set_motor_direction(elev_motor_direction_t dirn) {
         io_write_analog(MOTOR, MOTOR_SPEED);
     }
 }
-
 
 void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
     assert(floor >= 0);
