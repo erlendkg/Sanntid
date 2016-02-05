@@ -27,7 +27,24 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
 };
 
 
+int elevator_hold_door_open(int door_open_time)
+{
+  int floor;
 
+  if((floor = elev_get_floor_sensor_signal()) == -1) {
+    fprintf(stderr, "Elevator between floors\n");
+    return -1;
+  }
+
+  elev_set_door_open_lamp(1);
+  sleep(door_open_time);
+  elev_set_door_open_lamp(0);
+
+  return 1;
+}
+
+
+/Basic functions below
 void elev_init(void) {
     int init_success = io_init();
     assert(init_success && "Unable to initialize elevator hardware!");
@@ -80,13 +97,13 @@ void elev_set_floor_indicator(int floor) {
         io_set_bit(LIGHT_FLOOR_IND1);
     } else {
         io_clear_bit(LIGHT_FLOOR_IND1);
-    }    
+    }
 
     if (floor & 0x01) {
         io_set_bit(LIGHT_FLOOR_IND2);
     } else {
         io_clear_bit(LIGHT_FLOOR_IND2);
-    }    
+    }
 }
 
 
@@ -120,7 +137,7 @@ int elev_get_button_signal(elev_button_type_t button, int floor) {
         return 1;
     } else {
         return 0;
-    }    
+    }
 }
 
 
@@ -147,8 +164,3 @@ int elev_get_stop_signal(void) {
 int elev_get_obstruction_signal(void) {
     return io_read_bit(OBSTRUCTION);
 }
-
-
-
-
-
