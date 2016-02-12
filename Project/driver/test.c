@@ -13,16 +13,24 @@
 #include <netinet/in.h>
 #include <string.h>
 
+char *get_string(int msgType){
 
+char *msg = (char*) malloc(10 * sizeof(int));
 
+  if (msgType == 1){
+    sprintf(msg, "<%dE%dF%d>\0", msgType, 12, 3);
+  }
+  else if(msgType == 2){
+    sprintf(msg, "<%dE%dF%d>\0", msgType, 12, 3);
+  }
+  return msg;
+}
 
 int main(){
-  struct addrinfo hints;
-  struct addrinfo *servinfo;
-  pthread_t receive;
 
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-  //hints.ai_flags = AI_PASSIVE;
+  char *msg;
+  msg = get_string(1);
+  printf("%s\n", msg);
+  free(msg);
+  return;
 }

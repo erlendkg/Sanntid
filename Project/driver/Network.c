@@ -47,11 +47,48 @@ void* listen_for_orders(void *sockfd)
 }
 
 
+char *get_string(int msgType){
+
+char *msg = (char*) malloc(10 * sizeof(int));
+
+  if (msgType == 1){
+    sprintf(msg, "<%dE%dF%d>\0", msgType, E.Num, E.CurrentFloor);
+  }
+  else if(msgType == 2){
+    sprintf(msg, "<%dE%dF%d>\0", msgType, E.ButtonType, E.ButtonFloor);
+  }
+  return msg;
+}
+
+//SendMsg(int socket, int msgType), msgType 1 = job done, msgType 2 = button press.
+void Send_message(void *sockfd){
+
+  int msgType;
+  char *msg;
+
+  while (1) {
+    if(E.TaskComplete == 1 || E.ButtonClick ==1 ){
+
+      if (E.TaskComplete == 1) {
+        msgType = 1;
+      }
+      else if (E.ButtonClick == 1) {
+        msgType = 2;
+        E.ButtonClick = 0;
+      }
+      msg = get_string(msgType);
+      len = strlen(msg);
+      bytes_sent = send(*(int *)sockfd, msg, len, 0);
+      free(msg);
+    }
+  }
+}
+
 int initialize_listen(){
 
 struct addrinfo hints;
 struct addrinfo *servinfo;
-pthread_t receive;
+pthread_t receive, send;
 
 memset(&hints, 0, sizeof hints);
 hints.ai_family = AF_UNSPEC;
@@ -83,10 +120,10 @@ else
   printf("connection successful\n");
 }
 
-E.Num = 2;
-
 printf("entering thread\n");
 pthread_create(&receive, NULL, listen_for_orders, &sockfd);
+pthread_create(&send, NULL, send_message, &sockfd);
+
 pthread_join(receive, NULL);
 close(sockfd);
 
