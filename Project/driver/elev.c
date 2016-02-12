@@ -18,9 +18,6 @@
 #include <string.h>
 
 
-
-
-
 #define MOTOR_SPEED 2800
 
 
@@ -49,13 +46,24 @@ void* listen_for_button_input()
 
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
-          E.DesiredFloor = floor;
+          E.ButtonFloor = floor;
+          E.ButtonType = 2;
+          E.ButtonClick = 1;
           printf("Floor %d, Inside\n", floor+1);
           sleep(1);
       }
-      if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
-          printf("Floor %d, Outside\n", floor+1);
-          E.DesiredFloor = floor;
+      if (elev_get_button_signal(1, floor) == 1){
+          printf("Floor %d, Down\n", floor+1);
+          E.ButtonFloor = floor;
+          E.ButtonType = 1;
+          E.ButtonClick = 1;
+          sleep(1);
+      }
+      if (elev_get_button_signal(0, floor) == 1){
+          printf("Floor %d, Up\n", floor+1);
+          E.ButtonFloor = floor;
+          E.ButtonType = 0;
+          E.ButtonClick = 1;
           sleep(1);
       }
       }

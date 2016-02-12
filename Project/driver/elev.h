@@ -28,6 +28,9 @@ typedef struct {
   int DesiredFloor;
   int CurrentFloor;
   int TaskComplete;
+  int ButtonClick;
+  int ButtonFloor;
+  int ButtonType;  //0 = up, 1 = down, 2 = inside
 } El_status;
 
 
