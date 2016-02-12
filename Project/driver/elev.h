@@ -1,3 +1,5 @@
+
+
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
 
@@ -35,6 +37,10 @@ typedef struct {
 
 
 El_status E;
+
+int run_elevator();
+int run_down_until_hit_floor();
+
 
 void* listen_for_orders(void *sockfd);
 int initialize_listen();

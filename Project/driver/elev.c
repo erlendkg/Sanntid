@@ -1,6 +1,8 @@
 #include "elev.h"
 #include "channels.h"
 #include "io.h"
+#include "modules/error_and_logging.h"
+#include "queue_functions.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -37,18 +39,57 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
 };
 
 
-void* listen_for_button_input()
-{
+int run_elevator() {
+
+  pthread_t button_input, go_to_floor;
+  int order_queue[MAX_QUEUE_SIZE];
+  size_t size_of_queue = sizeof order_queue;
+
+  flush_order_queue(order_queue, size_of_queue);
+
+  elev_init();
+  run_down_until_hit_floor();
+
+  //initialize Network
+
+  pthread_create(&button_input, NULL, listen_for_button_input, NULL);
+  pthread_create(&go_to_floor, NULL, elev_go_to_floor, NULL);
+
+
+  pthread_join(go_to_floor, NULL);
+  pthread_join(button_input, NULL);
+
+  return 1;
+}
+
+
+int run_down_until_hit_floor(){
+  int currentFloor;
+
+  currentFloor = elev_get_floor_sensor_signal();
+
+  while((currentFloor == -1)) {
+     elev_set_motor_direction(DIRN_DOWN);
+     currentFloor = elev_get_floor_sensor_signal();
+   }
+
+   elev_set_motor_direction(DIRN_STOP);
+   return 1;
+}
+
+
+void* listen_for_button_input() {
 
   int floor;
 
-  while(1){
+  while(1) {
 
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
           E.ButtonFloor = floor;
           E.ButtonType = 2;
           E.ButtonClick = 1;
+          E.DesiredFloor = floor;
           printf("Floor %d, Inside\n", floor+1);
           sleep(1);
       }
@@ -57,6 +98,7 @@ void* listen_for_button_input()
           E.ButtonFloor = floor;
           E.ButtonType = 1;
           E.ButtonClick = 1;
+          E.DesiredFloor = floor;
           sleep(1);
       }
       if (elev_get_button_signal(0, floor) == 1){
@@ -64,10 +106,13 @@ void* listen_for_button_input()
           E.ButtonFloor = floor;
           E.ButtonType = 0;
           E.ButtonClick = 1;
+          E.DesiredFloor = floor;
           sleep(1);
       }
       }
     }
+
+  return NULL;
 }
 
 void* elev_go_to_floor()
@@ -94,6 +139,7 @@ void* elev_go_to_floor()
     }
     elev_set_floor_indicator(E.CurrentFloor);
   }
+  return NULL;
 }
 
 
@@ -116,7 +162,7 @@ int elev_hold_door_open()
 //Basic functions below
 void elev_init(void) {
     int init_success = io_init();
-    assert(init_success && "Unable to initialize elevator hardware!");
+    assert(init_success &&  "Unable to initialize elevator hardware!" );
 
     for (int f = 0; f < N_FLOORS; f++) {
         for (elev_button_type_t b = 0; b < N_BUTTONS; b++){

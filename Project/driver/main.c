@@ -5,9 +5,19 @@
 
 #include <unistd.h>
 #include<pthread.h>
+#include "queue_functions.h"
+
 
 
 int main() {
+  run_elevator();
+
+
+
+
+
+
+  /*
 
     pthread_t t_listen, t_go_to_floor;
     elev_init();
@@ -25,7 +35,7 @@ int main() {
     pthread_join(t_go_to_floor, NULL);
 
 
-
+*/
 
 
 
