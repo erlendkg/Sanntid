@@ -27,17 +27,20 @@ typedef struct {
   int Num;
   int DesiredFloor;
   int CurrentFloor;
-  int Available;
+  int TaskComplete;
 } El_status;
 
 
 El_status E;
 
+void* listen_for_orders(void *sockfd);
+int initialize_listen();
+
 void elev_init(void);
 
 void* elev_go_to_floor();
 void* listen_for_button_input();
-int elev_hold_door_open(int door_open_time);
+int elev_hold_door_open();
 
 void elev_set_motor_direction(elev_motor_direction_t dirn);
 void elev_set_button_lamp(elev_button_type_t button, int floor, int value);

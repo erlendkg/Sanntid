@@ -1,21 +1,24 @@
 #include "elev.h"
-
 #include "channels.h"
 #include "io.h"
 
 #include <assert.h>
 #include <stdlib.h>
 
-
-#include <stdio.h>
-#include <unistd.h>
-
-#include <pthread.h>
-
-
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <string.h>
+
+
+
 
 
 #define MOTOR_SPEED 2800
@@ -36,6 +39,7 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
+
 void* listen_for_button_input()
 {
 
@@ -46,14 +50,12 @@ void* listen_for_button_input()
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
           E.DesiredFloor = floor;
-          E.Available = 0;
           printf("Floor %d, Inside\n", floor+1);
           sleep(1);
       }
       if (elev_get_button_signal(1, floor) == 1 || elev_get_button_signal(0, floor) == 1){
           printf("Floor %d, Outside\n", floor+1);
           E.DesiredFloor = floor;
-          E.Available = 0;
           sleep(1);
       }
       }
@@ -76,10 +78,10 @@ void* elev_go_to_floor()
     }  else if (E.CurrentFloor < E.DesiredFloor){
       elev_set_motor_direction(DIRN_UP);
 
-    }  else if (E.CurrentFloor == E.DesiredFloor && E.Available == 0){
+    }  else if (E.CurrentFloor == E.DesiredFloor){
       elev_set_motor_direction(DIRN_STOP);
-      E.Available = 1;
-      elev_hold_door_open(DOOR_OPEN_TIME);
+      E.TaskComplete = 1;
+      elev_hold_door_open();
 
     }
     elev_set_floor_indicator(E.CurrentFloor);
@@ -87,9 +89,7 @@ void* elev_go_to_floor()
 }
 
 
-
-
-int elev_hold_door_open(int door_open_time)
+int elev_hold_door_open()
 {
   int floor;
 
