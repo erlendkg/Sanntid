@@ -1,4 +1,13 @@
-#include "headerClient.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <pthread.h>
+#include <unistd.h>
 
 El_Status E;
 
@@ -31,7 +40,7 @@ void* receive_thread(void *sockfd)
       }
   }
 }
-
+/*
 void elev_go_to_floor()
 {
   while(1){
@@ -42,7 +51,7 @@ void elev_go_to_floor()
       }
       if (E.CurrentFloor == E.DesiredFloor)
   }
-}
+}**/
 
 
 int main()
@@ -50,14 +59,14 @@ int main()
 
 struct addrinfo hints;
 struct addrinfo *servinfo;
-pthread_t receive;
+pthread_t receiveThread;
 
 memset(&hints, 0, sizeof hints);
 hints.ai_family = AF_UNSPEC;
 hints.ai_socktype = SOCK_STREAM;
 //hints.ai_flags = AI_PASSIVE;
 
-if (getaddrinfo("78.91.68.70", "312326", &hints, &servinfo) != 0){
+if (getaddrinfo("78.91.70.37", "312326", &hints, &servinfo) != 0){
   printf("failed to connect\n");
 }
 else
@@ -85,8 +94,8 @@ else
 E.Num = 2;
 
 printf("entering thread\n");
-pthread_create(&receive, NULL, receiveThread, &sockfd);
-pthread_join(receive, NULL);
+pthread_create(&receive_thread, NULL, receiveThread, &sockfd);
+pthread_join(receiveThread, NULL);
 close(sockfd);
 
 
