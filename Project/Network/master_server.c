@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
+#include "network_module.h"
 
 #define PORT "3490"
 
@@ -82,10 +71,11 @@ int main(void)
 
     printf("got connection\n");
 
-    if(send(new_fd, "Hello world d sdsjkfnd!K", 13, 0) == -1) {
-      perror("send");
-    }
+    char *buf ="Hello world d sdsjkfnd!K\0";
+    int len = strlen(buf);
 
+
+    sendall(new_fd, buf, &len);
   }
 
 }
