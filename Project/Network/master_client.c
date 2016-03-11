@@ -1,17 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
-#include <arpa/inet.h>
+#include "network_module.h"
 
 #define PORT "3490"
-#define IP "78.91.70.37"
+#define IP "10.20.105.201"
 #define MAXDATASIZE 100
 
 int main() {
@@ -58,15 +48,8 @@ int main() {
       perror("recv");
       exit(1);
     }
-
-    printf("recieved: %s", buf);
-
-
-
     buf[numbytes] = '\0';
-
-
-    printf("recieved: %s", buf);
+    printf("recieved\n: %s", buf);
 
 
     close(sockfd);
