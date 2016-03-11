@@ -1,4 +1,5 @@
 #include "Network.h"
+#include "elev.h"
 
 int sendall(int s, char *buf, int *len)
 {
@@ -8,7 +9,10 @@ int sendall(int s, char *buf, int *len)
 
   while(total < *len) {
     n = send(s, buf+total, bytesleft,0);
-    if (n == -1) {break;}
+    if (n == -1) {
+      printf("Failed to send\n");
+      break;
+    }
     total += n;
     bytesleft -=n;
   }
@@ -27,7 +31,7 @@ void* listen_for_orders(void *sockfd)
 
   while(1)
   {
-    if (bytes_received = recv(*(int*)sockfd, Server_reply, length, 0) != 0)
+    if ((bytes_received = recv(*(int*)sockfd, Server_reply, length, 0)) != 0)
       {
         sscanf(Server_reply, "<E%dF%d>", &MsgEl, &MsgFloor);
 
@@ -55,11 +59,11 @@ char *msg = (char*) malloc(10 * sizeof(int));
     sprintf(msg, "<%dE%dF%d>", msgType, E.Num, E.CurrentFloor);
   }
   else if(msgType == 2){
-<<<<<<< HEAD
+
     sprintf(msg, "<%dE%dF%d>", msgType, E.ButtonType, E.ButtonFloor);
-=======
-    sprintf(msg, "<%dE%dBT%dF%d>\0", msgType, E.Num, E.ButtonType, E.ButtonFloor);
->>>>>>> 3f7ca02c80564c1c33e3f7216709b83f53e563f7
+
+    sprintf(msg, "<%dE%dBT%dF%d>", msgType, E.Num, E.ButtonType, E.ButtonFloor);
+
   }
   return msg;
 }
@@ -90,50 +94,43 @@ void* send_message(void *sockfd){
   }
 }
 
-int initialize_listen(){
+int initialize_listen(char* server_ip){
 
-struct addrinfo hints;
-struct addrinfo *servinfo;
-pthread_t receive, send;
+  int sockfd;
+  struct addrinfo hints, *servinfo, *p;
+  int rv;
 
-memset(&hints, 0, sizeof hints);
-hints.ai_family = AF_UNSPEC;
-hints.ai_socktype = SOCK_STREAM;
-//hints.ai_flags = AI_PASSIVE;
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
 
-if (getaddrinfo("78.91.68.70", "312326", &hints, &servinfo) != 0){
-  printf("failed to connect\n");
-}
-else
-{
-  printf("succeded to get getaddrinfo for: 78.91.69.119\n");
-}
+  if((rv = getaddrinfo("78.91.2.218", PORT, &hints, &servinfo)) != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+  }
 
-/* Here we create sockets*/
-int sockfd;
+  for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("client: socket");
+            continue;
+        }
 
-sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+        if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+            close(sockfd);
+            perror("client: connect");
+            continue;
+        }
+        break;
+    }
 
-printf("sock %d\n", sockfd);
+    if(p == NULL) {
+      fprintf(stderr, "client: failed to connect\n");
+      return 2;
+    }
 
-if (connect(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-{
-  printf("connection failed+\n");
-  return 0;
-}
-else
-{
-  printf("connection successful\n");
-}
-
-printf("entering thread\n");
-pthread_create(&receive, NULL, listen_for_orders, &sockfd);
-pthread_create(&send, NULL, send_message, &sockfd);
-
-pthread_join(receive, NULL);
-close(sockfd);
-
-return 0;
+    printf("client: connecting\n");
 
 
+    freeaddrinfo(servinfo);
+    return sockfd;
 }

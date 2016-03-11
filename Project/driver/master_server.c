@@ -1,6 +1,6 @@
 #include "Network.h"
 
-#define PORT "3490"
+#define PORT "3492"
 
 #define BACKLOG 10
 

@@ -3,6 +3,7 @@
 #include "io.h"
 #include "modules/error_and_logging.h"
 #include "queue_functions.h"
+#include "Network.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -44,16 +45,30 @@ int run_elevator() {
   pthread_t button_input, go_to_floor;
   int order_queue[MAX_QUEUE_SIZE];
   size_t size_of_queue = sizeof order_queue;
+  int s;
+  int len;
+  char buf[100];
+  char ip_addr[32] = "78.91.2.218";
 
   flush_order_queue(order_queue, size_of_queue);
 
+  elev_set_motor_direction(DIRN_STOP);
   elev_init();
   run_down_until_hit_floor();
 
-  //initialize Network
+  s = initialize_listen(ip_addr);
+
 
   pthread_create(&button_input, NULL, listen_for_button_input, NULL);
   pthread_create(&go_to_floor, NULL, elev_go_to_floor, NULL);
+
+
+ while(1) {
+    sprintf(buf, "<1E%dF%d>", E.CurrentFloor, E.DesiredFloor);
+    len = strlen(buf);
+    sendall(s, buf, &len);
+    sleep(2);
+  }
 
 
   pthread_join(go_to_floor, NULL);
@@ -74,6 +89,7 @@ int run_down_until_hit_floor(){
    }
 
    elev_set_motor_direction(DIRN_STOP);
+
    return 1;
 }
 
@@ -116,20 +132,15 @@ void* listen_for_button_input() {
 }
 
 void* elev_go_to_floor()
-
-int floorSignal;
-
 {
+  int floorSignal;
   while(1){
     printf("%d %d\n", E.CurrentFloor, E.DesiredFloor);
 
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal != E.CurrentFloor) {
-
         E.CurrentFloor = elev_get_floor_sensor_signal();
-        // SEND MESSAGE TO MASTER
-              E.TaskComplete = 1;
-
+        E.TaskComplete = 1;
     }
 
     if (E.CurrentFloor > E.DesiredFloor){
@@ -140,12 +151,13 @@ int floorSignal;
 
     }  else if (E.CurrentFloor == E.DesiredFloor){
       elev_set_motor_direction(DIRN_STOP);
-      elev_hold_door_open();
 
     }
     elev_set_floor_indicator(E.CurrentFloor);
   }
-  return NULL;
+
+}
+return NULL;
 }
 
 
