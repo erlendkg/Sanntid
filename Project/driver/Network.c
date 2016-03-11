@@ -55,7 +55,7 @@ char *msg = (char*) malloc(10 * sizeof(int));
     sprintf(msg, "<%dE%dF%d>\0", msgType, E.Num, E.CurrentFloor);
   }
   else if(msgType == 2){
-    sprintf(msg, "<%dE%dF%d>\0", msgType, E.ButtonType, E.ButtonFloor);
+    sprintf(msg, "<%dE%dBT%dF%d>\0", msgType, E.Num, E.ButtonType, E.ButtonFloor);
   }
   return msg;
 }
