@@ -1,22 +1,22 @@
-#include "elev.h"
-#include "channels.h"
-#include "io.h"
 #include "Network.h"
 
-#include <assert.h>
-#include <stdlib.h>
+int sendall(int s, char *buf, int *len)
+{
+  int total = 0;
+  int bytesleft = *len;
+  int n;
 
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
+  while(total < *len) {
+    n = send(s, buf+total, bytesleft,0);
+    if (n == -1) {break;}
+    total += n;
+    bytesleft -=n;
+  }
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <string.h>
+  *len = total;
 
+  return n==-1?-1:0;
+}
 
 void* listen_for_orders(void *sockfd)
 {
@@ -52,19 +52,21 @@ char *get_string(int msgType){
 char *msg = (char*) malloc(10 * sizeof(int));
 
   if (msgType == 1){
-    sprintf(msg, "<%dE%dF%d>\0", msgType, E.Num, E.CurrentFloor);
+    sprintf(msg, "<%dE%dF%d>", msgType, E.Num, E.CurrentFloor);
   }
   else if(msgType == 2){
-    sprintf(msg, "<%dE%dF%d>\0", msgType, E.ButtonType, E.ButtonFloor);
+    sprintf(msg, "<%dE%dF%d>", msgType, E.ButtonType, E.ButtonFloor);
   }
   return msg;
 }
 
 //SendMsg(int socket, int msgType), msgType 1 = job done, msgType 2 = button press.
-void Send_message(void *sockfd){
+void* send_message(void *sockfd){
 
   int msgType;
   char *msg;
+  int len;
+  int bytes_sent;
 
   while (1) {
     if(E.TaskComplete == 1 || E.ButtonClick ==1 ){
