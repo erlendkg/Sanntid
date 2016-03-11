@@ -116,12 +116,19 @@ void* listen_for_button_input() {
 }
 
 void* elev_go_to_floor()
+
+int floorSignal;
+
 {
   while(1){
     printf("%d %d\n", E.CurrentFloor, E.DesiredFloor);
 
-    if (elev_get_floor_sensor_signal() != -1) {
-      E.CurrentFloor = elev_get_floor_sensor_signal();
+    if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
+      if (floorSignal != E.CurrentFloor) {
+
+        E.CurrentFloor = elev_get_floor_sensor_signal();
+        // SEND MESSAGE TO MASTER
+              E.TaskComplete = 1;
 
     }
 
@@ -133,7 +140,6 @@ void* elev_go_to_floor()
 
     }  else if (E.CurrentFloor == E.DesiredFloor){
       elev_set_motor_direction(DIRN_STOP);
-      E.TaskComplete = 1;
       elev_hold_door_open();
 
     }
