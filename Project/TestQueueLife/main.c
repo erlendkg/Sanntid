@@ -5,16 +5,19 @@
 //Tar inn beskjeder Elevator, Floor og ButtonType
 int main() {
 
+      struct Elevator_data E0;
+      queues_initiate(&E0);
 
-    int N = 1; //Number of elevators
+      printf("%d\n%d\n%d\n", E0.queue[1], E0.status, E0.currentFloor);
 
-    int queues[N-1][10]; //Elevator 0-N with its queues.
-                        //Index [][0] is the last known position for the elevators.
+      int button_order;
 
-                        test_queue_functions();
+      while(1){
 
+        printf("give BT2 order\n");
+        scanf("%d", &button_order);
 
-
-
-
+        place_bt2_order(&E0, button_order);
+        print_queue(E0.queue);
+      }
 }
