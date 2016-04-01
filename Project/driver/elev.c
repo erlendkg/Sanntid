@@ -5,6 +5,7 @@
 #include "queue_functions.h"
 #include "Network.h"
 
+
 #include <assert.h>
 #include <stdlib.h>
 
@@ -56,7 +57,7 @@ int run_elevator() {
   elev_init();
   run_down_until_hit_floor();
 
-  s = initialize_listen(ip_addr);
+  s = initialize_listen();
 
 
   pthread_create(&button_input, NULL, listen_for_button_input, NULL);
