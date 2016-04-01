@@ -203,7 +203,9 @@ void test_all_buttons(){
 
     for(int i = 0; i < N_ELEVATORS; i++){
       printf("Tis is Queue %d\n", i);
+      printf("Status is %d\n", E[i].status);
       print_queue(E[i].queue);
+
     }
 
     while(1){
@@ -242,7 +244,9 @@ void test_all_buttons(){
 
       for(int i = 0; i < N_ELEVATORS; i++){
         printf("Tis is Queue %d\n", i);
+        printf("Status is %d\n", E[i].status);
         print_queue(E[i].queue);
+
       }
     }
 }

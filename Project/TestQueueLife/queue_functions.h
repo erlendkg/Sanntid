@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #define MAX_QUEUE_SIZE 12
-#define N_ELEVATORS 3
+#define N_ELEVATORS 1
 
 struct Elevator_data {
   int queue[MAX_QUEUE_SIZE];

@@ -206,7 +206,6 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
   int smallest_elev;
 
   for(int i = 0; i < N_ELEVATORS; i++){
-
     //for every iteration, check if the order is on the way up for an elevator
     if(E[i].status == 0 && is_order_on_the_way(E[i].currentFloor, E[i].status, button_order)){
 
@@ -223,15 +222,23 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
       smallest_elev = i;
       smallest_queue = E[i].queueSize;
     }
-
+    printf("closes eelev %d", closest_elev);
     //the order was not on the way for any elevators,
     if((i == N_ELEVATORS - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
+      printf("Elevstatus %d\n", E[i].status);
+      update_elevator_status(E[i].queue, &E[i].status, button_order);
+      printf("Elevstatus %d\n", E[i].status);
     }
     else if((i == N_ELEVATORS - 1) && (closest_elev == -1)){
-      insert_item(E[smallest_elev].queue, 0, button_order);
+      //insert_item(E[smallest_elev].queue, 0, button_order);
+      place_order_not_on_the_way(E[i].queue, &E[i].status, button_order);
+      update_elevator_status(E[i].queue, &E[i].status, button_order);
+      printf("laks2");
     }
   }
+
+
 
 }
 void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
