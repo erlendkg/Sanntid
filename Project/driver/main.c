@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include<pthread.h>
 #include "queue_functions.h"
+#include "Network.h"
 
 
  int main(int argc, char const *argv[]) {
@@ -20,6 +21,10 @@ else if (atoi(argv[2]) == 2 ) {
     printf("Not enough input arguments\n");
     exit(0);
   }
+
+  initialize_client_socket(argv[3]);
+
+
   //Run as elevator
   //run_elevator();
 
