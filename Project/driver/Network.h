@@ -16,6 +16,7 @@
 
 #define PORT "3492"
 #define MAX_NUMBER_OF_ELEVS 3
+#define BACKLOG 10
 
 typedef struct {
   int active_connetions;

@@ -11,16 +11,13 @@ int main_server () {
 
   memset(&net_status, 0, sizeof net_status);
 
-  //net_status.server_socket = initialize_server_socket();
+  net_status.server_socket = initialize_server_socket();
 
-  net_status.server_socket = 0;
-  net_status.active_connetions = 10;
+
 
   pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) &net_status);
   pthread_join(listen_for_clients, NULL);
 
-  printf("server socket: %d\n", net_status.server_socket);
-  printf("server socket: %d\n", net_status.active_connetions);
 
 
   return 0;
@@ -30,17 +27,33 @@ int main_server () {
 void *thread_listen_for_clients(void *net_status) {
 
   Network_status* cast_net_status = (Network_status *) net_status;
+  int incoming_connection;
+  struct sockaddr_storage their_addr;
+  socklen_t sin_size;
 
-  printf("server socket: %d\n", cast_net_status->server_socket);
-  printf("active connections %d \n", cast_net_status->active_connetions);
+  while(1) {
 
-  cast_net_status->server_socket = 2;
-  cast_net_status->active_connetions = 5;
+    printf("server: waiting for connections...\n");
+  if(listen(cast_net_status->server_socket, BACKLOG) == -1) {
+    perror("listen");
+    exit(1);
+  }
+    printf("server: waiting for connections...\n");
 
-  return NULL;
+    sin_size = sizeof their_addr;
+
+    incoming_connection = accept(cast_net_status->server_socket, (struct sockaddr*) &their_addr, &sin_size);
+    if (incoming_connection == -1) {
+      perror("accept");
+      continue;
+    }
+  }
+
 
 
 }
+
+
 
 int initialize_server_socket() {
 
