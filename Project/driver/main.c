@@ -15,14 +15,14 @@
 if (atoi(argv[1]) == 1) {
   main_server();
 }
-else if (atoi(argv[2]) == 2 ) {
+else if (atoi(argv[1]) == 2 ) {
 
   if(argc != 3) {
     printf("Not enough input arguments\n");
     exit(0);
   }
 
-  initialize_client_socket(argv[3]);
+  initialize_client_socket(argv[2]);
 
 
   //Run as elevator
