@@ -12,7 +12,7 @@
  int main(int argc, char const *argv[]) {
 
 if (atoi(argv[1]) == 1) {
-  //Run as server
+  main_server();
 }
 else if (atoi(argv[2]) == 2 ) {
 

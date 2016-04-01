@@ -1,6 +1,47 @@
 #include "Network.h"
 #include "elev.h"
 
+
+
+int main_server () {
+
+  Network_status net_status;
+
+  pthread_t listen_for_clients;
+
+  memset(&net_status, 0, sizeof net_status);
+
+  //net_status.server_socket = initialize_server_socket();
+
+  net_status.server_socket = 0;
+  net_status.active_connetions = 10;
+
+  pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) &net_status);
+  pthread_join(listen_for_clients, NULL);
+
+  printf("server socket: %d\n", net_status.server_socket);
+  printf("server socket: %d\n", net_status.active_connetions);
+
+
+  return 0;
+
+}
+
+void *thread_listen_for_clients(void *net_status) {
+
+  Network_status* cast_net_status = (Network_status *) net_status;
+
+  printf("server socket: %d\n", cast_net_status->server_socket);
+  printf("active connections %d \n", cast_net_status->active_connetions);
+
+  cast_net_status->server_socket = 2;
+  cast_net_status->active_connetions = 5;
+
+  return NULL;
+
+
+}
+
 int initialize_server_socket() {
 
   int rv, sockfd;
@@ -38,10 +79,14 @@ int initialize_server_socket() {
     break;
   }
 
+
+
   freeaddrinfo(servinfo);
 
   return sockfd;
 }
+
+
 
 int sendall(int s, char *buf, int *len)
 {
