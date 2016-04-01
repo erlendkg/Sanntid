@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "elev.h"
 
@@ -8,9 +9,23 @@
 #include "queue_functions.h"
 
 
+ int main(int argc, char const *argv[]) {
 
-int main() {
-  run_elevator();
+if (atoi(argv[1]) == 1) {
+  //Run as server
+}
+else if (atoi(argv[2]) == 2 ) {
+
+  if(argc != 3) {
+    printf("Not enough input arguments\n");
+    exit(0);
+  }
+  //Run as elevator
+  //run_elevator();
+
+}
+
+
 
 
 

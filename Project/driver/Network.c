@@ -1,6 +1,48 @@
 #include "Network.h"
 #include "elev.h"
 
+int initialize_server_socket() {
+
+  int rv, sockfd;
+  int yes = 1;
+  struct addrinfo hints, *servinfo, *p;
+
+
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE;
+
+  if((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    return 1;
+  }
+
+  for(p = servinfo; p != NULL; p = p->ai_next) {
+    if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+        perror("server: socket");
+        continue;
+    }
+
+    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+      perror("setsockopt");
+      exit(1);
+    }
+
+    if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+      close(sockfd);
+      perror("server: bind");
+      continue;
+    }
+
+    break;
+  }
+
+  freeaddrinfo(servinfo);
+
+  return sockfd;
+}
+
 int sendall(int s, char *buf, int *len)
 {
   int total = 0;
