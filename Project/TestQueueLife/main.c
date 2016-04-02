@@ -5,7 +5,6 @@
 //Tar inn beskjeder Elevator, Floor og ButtonType
 int main(){
 
-//test_all_buttons();
-test_addorder();
+testNewElevatorConnected();
 
 }
