@@ -43,7 +43,6 @@ int run_down_until_hit_floor();
 
 
 void* listen_for_orders(void *sockfd);
-int initialize_listen();
 
 void elev_init(void);
 
