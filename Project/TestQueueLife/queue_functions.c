@@ -34,7 +34,7 @@ int flush_order_queue(int order_queue[MAX_QUEUE_SIZE], size_t size_of_order_queu
   return 1;
 }
 
-void update_elevator_status(int order_queue[MAX_QUEUE_SIZE], int * status, int currentFloor){
+void updateElevatorStruct(int order_queue[MAX_QUEUE_SIZE], int * status, int * queueSize, int currentFloor){
 
   if (currentFloor < order_queue[0]){
       *status = 0;
@@ -42,28 +42,27 @@ void update_elevator_status(int order_queue[MAX_QUEUE_SIZE], int * status, int c
   else if (currentFloor > order_queue[0]){
       *status = 1;
   }
-  else{
+  else if (order_queue == 0){
       *status = 2;
+  }
+
+  for (int i = 0; i < MAX_QUEUE_SIZE; i++){
+
+    if (order_queue[i] == 0) {
+      *queueSize = i;
+      break;
+    }
   }
 
 }
 
-void remove_first_item(int order_queue[MAX_QUEUE_SIZE]){
+void removeItemFromQueue(int order_queue[MAX_QUEUE_SIZE]){
   for (int i = 0; i < MAX_QUEUE_SIZE-1; i++){
     order_queue[i] = order_queue[i+1];
   }
     order_queue[MAX_QUEUE_SIZE-1] = 0;
 }
 
-int handle_elevator_message(struct Elevator_data * E, int MsgFloor){
-
-  E->currentFloor = MsgFloor;
-
-  if(E->queue[0] == MsgFloor){
-    remove_first_item(E->queue);
-    update_elevator_status(E->queue, &E->status, E->currentFloor);
-  }
-}
 
 int insert_item(int order_queue[MAX_QUEUE_SIZE], int pos, int num){
 
@@ -171,14 +170,6 @@ void place_order_not_on_the_way(int order_queue[MAX_QUEUE_SIZE], int * status, i
 }
 
 
-void queues_initiate(struct Elevator_data E[N_ELEVATORS]){
-
-  for(int i = 0; i < N_ELEVATORS; i++){
-    size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
-    flush_order_queue(E[i].queue,l);
-  }
-}
-
 void place_bt2_order(struct Elevator_data * E, int button_order){
 
 bool on_way;
@@ -194,7 +185,7 @@ bool on_way;
     }
     else if (E->status == 2){
         insert_item(E->queue, 0, button_order);
-        update_elevator_status(E->queue, &E->status, E->currentFloor);
+        updateElevatorStruct(E->queue, &E->status, &E->queueSize, E->currentFloor);
     }
 }
 
@@ -222,19 +213,20 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
       smallest_elev = i;
       smallest_queue = E[i].queueSize;
     }
-    printf("closes eelev %d", closest_elev);
+
     //the order was not on the way for any elevators,
     if((i == N_ELEVATORS - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
-      printf("Elevstatus %d\n", E[i].status);
-      update_elevator_status(E[i].queue, &E[i].status, button_order);
-      printf("Elevstatus %d\n", E[i].status);
+      updateElevatorStruct(E[i].queue, &E[i].status, &E[i].queueSize, E[i].currentFloor);
+
     }
     else if((i == N_ELEVATORS - 1) && (closest_elev == -1)){
       //insert_item(E[smallest_elev].queue, 0, button_order);
-      place_order_not_on_the_way(E[i].queue, &E[i].status, button_order);
-      update_elevator_status(E[i].queue, &E[i].status, button_order);
-      printf("laks2");
+
+      printf("her er vi nå\n smallest elev = %d", smallest_elev);
+
+      insert_item(E[smallest_elev].queue, E[smallest_elev].queueSize, button_order);
+      updateElevatorStruct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queueSize, E[smallest_elev].currentFloor);
     }
   }
 
@@ -270,10 +262,55 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
     //the order was not on the way for any elevators,
     if((i == N_ELEVATORS - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
+      updateElevatorStruct(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queueSize, E[closest_elev].currentFloor);
         }
     else if((i == N_ELEVATORS - 1) && (closest_elev == -1)){
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
+      updateElevatorStruct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queueSize, E[smallest_elev].currentFloor);
     }
   }
+}
 
+void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
+
+    for(int i = 0; i < N_ELEVATORS; i++){
+      size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
+      flush_order_queue(E[i].queue,l);
+
+      E[i].status = 2;
+      E[i].queueSize = 0;
+      E[i].currentFloor = 1;
+      E[i].last_order = 0;
+    }
+}
+
+void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator){
+
+  if (buttonType == 0) {
+
+    place_bt0_order(E, desired_floor);
+
+  }
+  else if (buttonType == 1) {
+
+    place_bt1_order(E, desired_floor);
+
+  }
+  else if (buttonType == 2) {
+
+    place_bt2_order(&E[elevator], desired_floor);
+
+  }
+}
+int isElevatorOnCorrectFloor(struct Elevator_data * E, int MsgFloor){
+
+  E->currentFloor = MsgFloor;
+
+  if(E->queue[0] == MsgFloor){
+    removeItemFromQueue(E->queue);
+    updateElevatorStruct(E->queue, &E->status, &E->queueSize, E->currentFloor);
+
+    return 1;
+  }
+  return 0;
 }
