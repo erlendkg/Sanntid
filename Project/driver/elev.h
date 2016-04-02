@@ -24,7 +24,7 @@ typedef enum tag_elev_lamp_type {
 
 typedef struct {
 
-  int Num;
+  int num;
   int desired_floor;
   int current_floor;
   int is_busy;

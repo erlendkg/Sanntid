@@ -21,34 +21,36 @@ int main_server() {
 
 int main_client(char const *server_ip) {
   int server_socket;
-  Elev_info this_elevator;
 
-  this_elevator.is_busy = 1;
+  Elev_info *this_elevator = malloc(sizeof(Elev_info));
+
+
 
   elev_set_motor_direction(DIRN_STOP);
   elev_init();
   run_down_until_hit_floor();
+  this_elevator->current_floor = elev_get_floor_sensor_signal();
 
-  this_elevator.is_busy = 0;
+  this_elevator->is_busy = 0;
 
   if((server_socket = initialize_client_socket(server_ip)) == 2) {
     printf("Failed to create socket\n");
-    this_elevator.is_connected_to_network = 0;
+    this_elevator->is_connected_to_network = 0;
   }
 
 
   while(1) {
 
-    if ((this_elevator.is_connected_to_network) == 0) {
+    if ((this_elevator->is_connected_to_network) == 0) {
       printf("No network connection could be established\n");
       printf("Currently Running in single elevator mode\n");
-      single_elevator_mode(&this_elevator, &server_socket, server_ip);
+      single_elevator_mode(this_elevator, &server_socket, server_ip);
       printf("Network connection established\n");
       printf("Switching to network mode\n");
     }
 
 
-    if (this_elevator.is_busy == 0 && this_elevator.is_connected_to_network == 1)
+    if (this_elevator->is_busy == 0 && this_elevator->is_connected_to_network == 1)
     {
       //Lytter etter ordre
       //Hvis får ordre sender til server
@@ -122,13 +124,14 @@ int initialize_client_socket(char const* server_ip) {
     int rv;
 
     memset(&hints, 0, sizeof hints);
+
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
     if((rv = getaddrinfo(server_ip, PORT, &hints, &servinfo)) != 0) {
       fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+      return 2;
     }
-
     for(p = servinfo; p != NULL; p = p->ai_next) {
           if ((sockfd = socket(p->ai_family, p->ai_socktype,
                   p->ai_protocol)) == -1) {
@@ -137,10 +140,11 @@ int initialize_client_socket(char const* server_ip) {
           }
 
           if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-              close(sockfd);
               perror("client: connect");
               continue;
           }
+
+
           break;
       }
 
@@ -150,7 +154,6 @@ int initialize_client_socket(char const* server_ip) {
       }
 
       printf("client: connecting\n");
-
 
       freeaddrinfo(servinfo);
       return sockfd;
