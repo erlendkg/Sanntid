@@ -1,52 +1,6 @@
 #include "queue_functions.h"
 
 
-void test_queue_functions(int order_queue[MAX_QUEUE_SIZE])
-{
-
-  int k, order;
-  int c;
-  int a, b;
-  size_t l = MAX_QUEUE_SIZE * sizeof (order_queue[0]);
-
-
-  flush_order_queue(order_queue,l);
-
-
-  for (k = 0; k < MAX_QUEUE_SIZE; k++) {
-    printf("%d\n",order_queue[k]);
-  }
-
-  while(1) {
-    printf("-1 for flush, 0 to remove first item, 666 to add number in desired pos.\n");
-    scanf("%d", &c);
-
-    if(c == -1)
-    {
-      flush_order_queue(order_queue,l);
-    }
-    else if(c == 0)
-    {
-      removeItemFromQueue(order_queue);
-    }
-    else if(c == 666)
-    {
-      printf("On what position do you want to insert the number\n");
-      scanf("%d", &a);
-      printf("what number to be inserted?\n");
-      scanf("%d", &b);
-      insert_item(order_queue, a, b);
-    }
-    else {
-
-      assign_order_to_queue(c, order_queue, MAX_QUEUE_SIZE);
-
-    }
-      print_queue(order_queue);
-    }
-
-
-}
 
 void test_onway_functions(){
 
@@ -100,6 +54,18 @@ void test_onway_functions(){
           print_queue(E0.queue);
       }
 
+  }
+  void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
+
+      for(int i = 0; i < N_ELEVATORS; i++){
+        size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
+        flush_order_queue(E[i].queue,l);
+
+        E[i].status = 2;
+        E[i].queueSize = 0;
+        E[i].currentFloor = 1;
+        E[i].last_order = 0;
+      }
   }
 
   void bt2Test_queues_initiate(struct Elevator_data * E){
@@ -164,15 +130,15 @@ void test_onway_functions(){
       E[0].queue[0] = 10;
       E[0].queue[1] = 8;
       E[0].queue[2] = 6;
-      E[0].queue[3] = 4;
-      E[0].queue[4] = 3;
-      E[0].queue[5] = 15;
-      E[0].queue[6] = 20;
+      // E[0].queue[3] = 4;
+      // E[0].queue[4] = 3;
+      // E[0].queue[5] = 15;
+      // E[0].queue[6] = 20;
 
 
         E[0].status = 1;
         E[0].currentFloor = 12;
-        E[0].queueSize = 7;
+        E[0].queueSize = 3;
 
 //ELEV 1 is going up from floor 8
       E[1].queue[0] = 9;
@@ -182,11 +148,11 @@ void test_onway_functions(){
       E[1].queue[4] = 19;
       E[1].queue[5] = 6;
       E[1].queue[6] = 3;
-
+      E[1].queue[7] = 21;
 
         E[1].status = 0;
         E[1].currentFloor = 8;
-        E[1].queueSize = 7;
+        E[1].queueSize = 8;
 
 //ELEV 2 is idle floor 9
       E[2].status = 2;
@@ -253,6 +219,7 @@ void test_all_buttons(){
 
 
 
+
 void test_addorder(){ //Dette er malen på hvordan masteren må kjøre
 
   struct Elevator_data E[N_ELEVATORS];
@@ -297,3 +264,74 @@ else if (msgtype == 2){
   }
 }
 }
+
+
+void testElevatorCrash(){
+  struct Elevator_data E[N_ELEVATORS];
+  int button_order, BT, elev, MsgElev, MsgFloor;
+
+    bt01Test_queues_initiate(E);
+
+    for(int i = 0; i < N_ELEVATORS; i++){
+      printf("Tis is Queue %d\n", i);
+      printf("Status is %d\n", E[i].status);
+      print_queue(E[i].queue);
+    }
+
+    printf("\nEverything is nice and well. Dont press anything\n");
+    getchar();
+
+    printf("\n\n\n\n\nOH NO ELEVATOR 1 is dying! THE HUMANITY!\n");
+
+    disableElevator(&E[1]);
+    distributeQueueToOtherElevators(E, E[1].queue);
+    size_t l = MAX_QUEUE_SIZE * sizeof (E[1].queue[0]);
+    flush_order_queue(E[1].queue,l);
+
+
+    usleep(1000);
+
+    for(int i = 0; i < N_ELEVATORS; i++){
+      printf("Tis is Queue %d\n", i);
+      printf("Status is %d\n", E[i].status);
+      print_queue(E[i].queue);
+    }
+
+}
+
+void testNewElevatorConnected(){
+
+  struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS];
+  int lengthOfElevatorArray = 3;
+  int newElevatorNumber;
+
+  bt01Test_queues_initiate(E);
+E[1].status = -1;
+
+    for(int i = 0; i < lengthOfElevatorArray; i++){
+      printf("Tis is Queue %d\n", i);
+      printf("Status is %d\n", E[i].status);
+      print_queue(E[i].queue);
+    }
+
+
+
+
+  //New connecton happened
+    newElevatorNumber = assignNumberToNewElevator(E, lengthOfElevatorArray);
+
+    if (newElevatorNumber == lengthOfElevatorArray){
+      lengthOfElevatorArray++;
+    }
+
+    printf("ny plassering %d\n", newElevatorNumber);
+
+    initiateQueue(E[newElevatorNumber]);
+
+    for(int i = 0; i < lengthOfElevatorArray; i++){
+      printf("Tis is Queue %d\n", i);
+      printf("Status is %d\n", E[i].status);
+      print_queue(E[i].queue);
+    }
+
+  }

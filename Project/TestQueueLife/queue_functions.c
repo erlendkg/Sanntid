@@ -1,23 +1,7 @@
 #include "queue_functions.h"
 
 
-int assign_order_to_queue(int order, int order_queue[MAX_QUEUE_SIZE], int max_queue_size) {
-
-  int index;
-
-  for(index = 0; index < max_queue_size; index++) {
-
-    if((order_queue[index]) == 0) {
-      order_queue[index] = order;
-      break;
-    }
-  }
-  return 1;
-}
-
-
 void print_queue(int order_queue[MAX_QUEUE_SIZE]) {
-
 
   printf("---------------------------------\n");
   for (int k = 0; k < MAX_QUEUE_SIZE; k++) {
@@ -53,8 +37,33 @@ void updateElevatorStruct(int order_queue[MAX_QUEUE_SIZE], int * status, int * q
       break;
     }
   }
-
 }
+
+void disableElevator(struct Elevator_data *E){
+
+  E->status = -1;
+}
+
+int isElevatorDisabled(int status){
+
+    if (status == -1){
+      return 1;
+    }
+    else {return 0;}
+}
+
+void distributeQueueToOtherElevators(struct Elevator_data E[N_ELEVATORS], int crashedQueue[MAX_QUEUE_SIZE]){
+
+  int i = 0;
+
+  while (crashedQueue[i] != 0){
+
+    addNewOrderToQueue(E,crashedQueue[i],0,0);
+
+    i++;
+  }
+}
+
 
 void removeItemFromQueue(int order_queue[MAX_QUEUE_SIZE]){
   for (int i = 0; i < MAX_QUEUE_SIZE-1; i++){
@@ -197,6 +206,10 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
   int smallest_elev;
 
   for(int i = 0; i < N_ELEVATORS; i++){
+
+    //Check if the elevator is disabled, jump over it if it is.
+    i = i + isElevatorDisabled(E[i].status);
+
     //for every iteration, check if the order is on the way up for an elevator
     if(E[i].status == 0 && is_order_on_the_way(E[i].currentFloor, E[i].status, button_order)){
 
@@ -215,15 +228,13 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
     }
 
     //the order was not on the way for any elevators,
-    if((i == N_ELEVATORS - 1) && (closest_elev != -1)){
+    if((i >= N_ELEVATORS - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
       updateElevatorStruct(E[i].queue, &E[i].status, &E[i].queueSize, E[i].currentFloor);
 
     }
-    else if((i == N_ELEVATORS - 1) && (closest_elev == -1)){
+    else if((i >= N_ELEVATORS - 1) && (closest_elev == -1)){
       //insert_item(E[smallest_elev].queue, 0, button_order);
-
-      printf("her er vi nå\n smallest elev = %d", smallest_elev);
 
       insert_item(E[smallest_elev].queue, E[smallest_elev].queueSize, button_order);
       updateElevatorStruct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queueSize, E[smallest_elev].currentFloor);
@@ -241,6 +252,8 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
   int smallest_elev;
 
   for(int i = 0; i < N_ELEVATORS; i++){
+    //Check if the elevator is disabled, jump over it if it is.
+    i = i + isElevatorDisabled(E[i].status);
 
     //for every iteration, check if the order is on the way up for an elevator
     if(E[i].status == 1 && is_order_on_the_way(E[i].currentFloor, E[i].status, button_order)){
@@ -261,28 +274,31 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
 
     //the order was not on the way for any elevators,
     if((i == N_ELEVATORS - 1) && (closest_elev != -1)){
+
       insert_item(E[closest_elev].queue, 0, button_order);
       updateElevatorStruct(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queueSize, E[closest_elev].currentFloor);
         }
     else if((i == N_ELEVATORS - 1) && (closest_elev == -1)){
+
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
       updateElevatorStruct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queueSize, E[smallest_elev].currentFloor);
     }
   }
 }
 
-void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
+int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators){
 
-    for(int i = 0; i < N_ELEVATORS; i++){
-      size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
-      flush_order_queue(E[i].queue,l);
+  int i;
 
-      E[i].status = 2;
-      E[i].queueSize = 0;
-      E[i].currentFloor = 1;
-      E[i].last_order = 0;
+  for(i = 0; i<numberOfElevators; i++){
+    if (E[i].status == -1){
+      return i;
     }
+  }
+    return numberOfElevators;
 }
+
+
 
 void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator){
 
