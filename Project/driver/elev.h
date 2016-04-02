@@ -1,5 +1,3 @@
-
-
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
 
@@ -27,18 +25,20 @@ typedef enum tag_elev_lamp_type {
 typedef struct {
 
   int Num;
-  int DesiredFloor;
-  int CurrentFloor;
-  int TaskComplete;
-  int ButtonClick;
-  int ButtonFloor;
-  int ButtonType;  //0 = up, 1 = down, 2 = inside
-} El_status;
+  int desired_floor;
+  int current_floor;
+  int is_busy;
+  int button_click;
+  int button_floor;
+  int button_type;  //0 = up, 1 = down, 2 = inside
+  int is_connected_to_network;
+} Elev_info;
 
 
-El_status E;
 
-int run_elevator();
+
+int single_elevator_mode(Elev_info *this_elevator, int *server_socket);
+int run_elevator(Elev_info *this_elevator);
 int run_down_until_hit_floor();
 
 
@@ -46,8 +46,8 @@ void* listen_for_orders(void *sockfd);
 
 void elev_init(void);
 
-void* elev_go_to_floor();
-void* listen_for_button_input();
+void* elev_go_to_floor(void *this_elevator);
+void* listen_for_button_input(void *this_elevator);
 int elev_hold_door_open();
 
 void elev_set_motor_direction(elev_motor_direction_t dirn);

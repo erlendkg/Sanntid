@@ -12,12 +12,62 @@ int main_server() {
   net_status.server_socket = initialize_server_socket();
 
   pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) &net_status);
-  pthread_join(listen_for_clients, NULL);
 
+  pthread_join(listen_for_clients, NULL);
 
 
   return 0;
 }
+
+int main_client(char const *server_ip) {
+  int server_socket;
+  Elev_info this_elevator;
+
+  this_elevator.is_busy = 1;
+
+  elev_set_motor_direction(DIRN_STOP);
+  elev_init();
+  run_down_until_hit_floor();
+
+  this_elevator.is_busy = 0;
+
+  if((server_socket = initialize_client_socket(server_ip)) == 2) {
+    printf("Failed to create socket\n");
+    this_elevator.is_connected_to_network = 0;
+  }
+
+
+  while(1) {
+
+    if (this_elevator.is_connected_to_network = 0) {
+      printf("No network connection could be established\n");
+      printf("Currently Running in single elevator mode\n");
+      single_elevator_mode(&this_elevator, &server_socket);
+      printf("Network connection established\n");
+      printf("Switching to network mode\n");
+    }
+
+
+    if (this_elevator.is_busy == 0 && this_elevator.is_connected_to_network == 1)
+    {
+      //Lytter etter ordre
+      //Hvis får ordre sender til server
+      //Mottar ordre
+      //Utfører Oppgave
+      //Oppgave utført
+    }
+  }
+
+}
+
+int wait_for_orders_from_server(int server_socket) {
+  int bytes_received;
+  char order[32];
+  int length[32];
+
+
+}
+
 
 void *thread_listen_for_clients(void *net_status) {
 
@@ -49,6 +99,7 @@ void *thread_listen_for_clients(void *net_status) {
     //Mutex Open
 
     printf("Connection accepted\n");
+    printf("Number of active connections: %d\n", cast_net_status->active_connetions);
 
   }
 }
@@ -58,8 +109,13 @@ void *thread_maintain_active_connections(void *net_status) {
 
 }
 
+void *thread_recieve_orders_from_elevators(void *elev_status) {
 
-int initialize_client_socket(char* server_ip) {
+
+}
+
+
+int initialize_client_socket(char const* server_ip) {
 
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
@@ -142,8 +198,6 @@ int initialize_server_socket() {
 
   return sockfd;
 }
-
-
 
 int sendall(int s, char *buf, int *len)
 {

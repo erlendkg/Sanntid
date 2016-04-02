@@ -21,9 +21,7 @@ else if (atoi(argv[1]) == 2 ) {
     printf("Not enough input arguments\n");
     exit(0);
   }
-
-  initialize_client_socket(argv[2]);
-
+  main_client(argv[2]);
 
   //Run as elevator
   //run_elevator();
