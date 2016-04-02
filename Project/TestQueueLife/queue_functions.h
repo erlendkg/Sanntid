@@ -10,7 +10,7 @@
 struct Elevator_data {
   int queue[MAX_QUEUE_SIZE];
   int queueSize;
-  int status; // 0 Is up, 1 is down, 2 is idle.
+  int status; // 0 Is up, 1 is down, 2 is idle. -1 is elevator not connected
   int currentFloor;
   int last_order;
 };
@@ -34,11 +34,12 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order);
 void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order);
 
 //Functions for master to run
-void initiateQueues(struct Elevator_data E[N_ELEVATORS]);
+void initiateQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber);
 void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator);
 int isElevatorOnCorrectFloor(struct Elevator_data * E, int MsgFloor);
 
 //Test functions (test_functions.c)
+void initiateQueues(struct Elevator_data E[N_ELEVATORS]);
 void test_queue_functions(int order_queue[MAX_QUEUE_SIZE]);
 void test_onway_functions();
 void bt2Test_queues_initiate(struct Elevator_data * E);

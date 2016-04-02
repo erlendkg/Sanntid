@@ -1,6 +1,20 @@
 #include "queue_functions.h"
 
 
+
+void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
+
+    for(int i = 0; i < N_ELEVATORS; i++){
+      size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
+      flush_order_queue(E[i].queue,l);
+
+      E[i].status = 2;
+      E[i].queueSize = 0;
+      E[i].currentFloor = 1;
+      E[i].last_order = 0;
+    }
+}
+
 void test_queue_functions(int order_queue[MAX_QUEUE_SIZE])
 {
 

@@ -141,7 +141,8 @@ int initialize_client_socket(char const* server_ip) {
 
           if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
               perror("client: connect");
-              continue;
+              close(sockfd);
+              return 2;
           }
 
 
