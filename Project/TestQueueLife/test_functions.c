@@ -27,7 +27,7 @@ void test_queue_functions(int order_queue[MAX_QUEUE_SIZE])
     }
     else if(c == 0)
     {
-      remove_first_item(order_queue);
+      removeItemFromQueue(order_queue);
     }
     else if(c == 666)
     {
@@ -203,7 +203,9 @@ void test_all_buttons(){
 
     for(int i = 0; i < N_ELEVATORS; i++){
       printf("Tis is Queue %d\n", i);
+      printf("Status is %d\n", E[i].status);
       print_queue(E[i].queue);
+
     }
 
     while(1){
@@ -236,13 +238,62 @@ void test_all_buttons(){
         printf("What what floor is it on:\n");
         scanf("%d", &MsgFloor);
 
-        handle_elevator_message(&E[MsgElev], MsgFloor);
+        isElevatorOnCorrectFloor(&E[MsgElev], MsgFloor);
 
       }
 
       for(int i = 0; i < N_ELEVATORS; i++){
         printf("Tis is Queue %d\n", i);
+        printf("Status is %d\n", E[i].status);
         print_queue(E[i].queue);
+
       }
     }
+}
+
+
+
+void test_addorder(){ //Dette er malen på hvordan masteren må kjøre
+
+  struct Elevator_data E[N_ELEVATORS];
+  int desired_floor, buttonType, elevator, msgtype, elevfloor;
+
+  bt01Test_queues_initiate(E);
+
+  while(1){
+
+    printf("enter mgstype, 1: button order, 2: elevator on floor\n");
+    scanf("%d",&msgtype);
+
+  if (msgtype == 1){
+      printf("desiredflor\n");
+    scanf("%d",&desired_floor);
+    printf("butontype\n");
+    scanf("%d",&buttonType);
+    printf("elevatur\n");
+    scanf("%d",&elevator);
+
+    addNewOrderToQueue(E,desired_floor,buttonType,elevator);
+}
+else if (msgtype == 2){
+
+    printf("What elevator is it?\n");
+    scanf("%d",&elevator);
+    printf("What floor is the elevator on?\n");
+    scanf("%d",&elevfloor);
+
+    int sendNewOrder = isElevatorOnCorrectFloor(&E[elevator],elevfloor);
+
+    if (sendNewOrder){
+      printf("Sending new order to elevator nr %d", elevator);
+      printf("message sent!\n");
+    }
+}
+
+  for(int i = 0; i < N_ELEVATORS; i++){
+    printf("Tis is Queue %d\n", i);
+    printf("Status is %d\n", E[i].status);
+    print_queue(E[i].queue);
+  }
+}
 }
