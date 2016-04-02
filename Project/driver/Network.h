@@ -33,9 +33,9 @@ int initialize_client_socket(char const *server_ip);
 int wait_for_orders_from_server(int server_socket);
 
 
-void* listen_for_orders(void *sockfd);
-char *get_string(int msgType);
-void Send_message(void *sockfd);
+//void* listen_for_orders(void *sockfd);
+//char *get_string(int msgType);
+//void Send_message(void *sockfd);
 int sendall(int s, char *buf, int *len);
 void *thread_listen_for_clients(void *net_status);
 void *thread_maintain_active_connections(void *net_status);

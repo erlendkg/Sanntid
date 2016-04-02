@@ -37,7 +37,7 @@ typedef struct {
 
 
 
-int single_elevator_mode(Elev_info *this_elevator, int *server_socket);
+int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
 int run_elevator(Elev_info *this_elevator);
 int run_down_until_hit_floor();
 

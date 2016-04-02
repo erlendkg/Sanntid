@@ -40,21 +40,25 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
-int single_elevator_mode(Elev_info *this_elevator, int *server_socket) {
+int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
-
 
   run_down_until_hit_floor();
   elev_set_motor_direction(DIRN_STOP);
 
   pthread_create(&button_input, NULL, listen_for_button_input, NULL);
+  pthread_create(&go_to_floor, NULL, elev_go_to_floor, (void *) this_elevator);
 
+  while(1) {
+    if((*server_socket = initialize_client_socket(server_ip)) != 2) {
+      this_elevator->is_connected_to_network = 1;
 
+      pthread_cancel(button_input);
+      pthread_cancel(go_to_floor);
 
-
-
-  return 0;
-
+      return 0;
+    }
+  }
 }
 
 int run_elevator(Elev_info *this_elevator) {

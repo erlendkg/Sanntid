@@ -39,10 +39,10 @@ int main_client(char const *server_ip) {
 
   while(1) {
 
-    if (this_elevator.is_connected_to_network = 0) {
+    if ((this_elevator.is_connected_to_network) == 0) {
       printf("No network connection could be established\n");
       printf("Currently Running in single elevator mode\n");
-      single_elevator_mode(&this_elevator, &server_socket);
+      single_elevator_mode(&this_elevator, &server_socket, server_ip);
       printf("Network connection established\n");
       printf("Switching to network mode\n");
     }
@@ -182,7 +182,7 @@ int initialize_server_socket() {
 
     if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
       perror("setsockopt");
-      exit(1);
+      return -1;
     }
 
     if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
@@ -220,7 +220,7 @@ int sendall(int s, char *buf, int *len)
   return n==-1?-1:0;
 }
 
-void* listen_for_orders(void *sockfd) {
+/*void* listen_for_orders(void *sockfd) {
   int bytes_received;
   int length = 32;
   char Server_reply[32];
@@ -246,8 +246,7 @@ void* listen_for_orders(void *sockfd) {
       }
   }
 }
-
-
+*
 char *get_string(int msgType) {
 
 char *msg = (char*) malloc(10 * sizeof(int));
@@ -290,3 +289,4 @@ void* send_message(void *sockfd) {
     }
   }
 }
+*/
