@@ -26,8 +26,6 @@ int main_client(char const *server_ip) {
 
   elev_init();
   elev_set_motor_direction(DIRN_STOP);
-  run_down_until_hit_floor();
-  elev_set_motor_direction(DIRN_STOP);
 
   this_elevator->current_floor = elev_get_floor_sensor_signal();
 
