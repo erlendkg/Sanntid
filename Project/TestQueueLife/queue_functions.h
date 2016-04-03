@@ -39,21 +39,15 @@ void disableElevator(struct Elevator_data *E);
 void distributeQueueToOtherElevators(struct Elevator_data E[N_ELEVATORS], int crashedQueue[MAX_QUEUE_SIZE]);
 
 //Functions for master to run
-<<<<<<< HEAD
+
 void initiateQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber);
-=======
-void initiateQueue(struct Elevator_data *E);
 int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators);
->>>>>>> 44779f7d90e8cd1e2b08f3756a646cebcd87e78b
 void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator);
 int isElevatorOnCorrectFloor(struct Elevator_data * E, int MsgFloor);
 
 //Test functions (test_functions.c)
-<<<<<<< HEAD
+
 void initiateQueues(struct Elevator_data E[N_ELEVATORS]);
-void test_queue_functions(int order_queue[MAX_QUEUE_SIZE]);
-=======
->>>>>>> 44779f7d90e8cd1e2b08f3756a646cebcd87e78b
 void test_onway_functions();
 void bt2Test_queues_initiate(struct Elevator_data * E);
 void initiateQueues(struct Elevator_data E[N_ELEVATORS]);

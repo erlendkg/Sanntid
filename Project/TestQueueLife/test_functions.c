@@ -1,69 +1,7 @@
 #include "queue_functions.h"
 
 
-<<<<<<< HEAD
 
-void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
-
-    for(int i = 0; i < N_ELEVATORS; i++){
-      size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
-      flush_order_queue(E[i].queue,l);
-
-      E[i].status = 2;
-      E[i].queueSize = 0;
-      E[i].currentFloor = 1;
-      E[i].last_order = 0;
-    }
-}
-
-void test_queue_functions(int order_queue[MAX_QUEUE_SIZE])
-{
-
-  int k, order;
-  int c;
-  int a, b;
-  size_t l = MAX_QUEUE_SIZE * sizeof (order_queue[0]);
-
-
-  flush_order_queue(order_queue,l);
-
-
-  for (k = 0; k < MAX_QUEUE_SIZE; k++) {
-    printf("%d\n",order_queue[k]);
-  }
-
-  while(1) {
-    printf("-1 for flush, 0 to remove first item, 666 to add number in desired pos.\n");
-    scanf("%d", &c);
-
-    if(c == -1)
-    {
-      flush_order_queue(order_queue,l);
-    }
-    else if(c == 0)
-    {
-      removeItemFromQueue(order_queue);
-    }
-    else if(c == 666)
-    {
-      printf("On what position do you want to insert the number\n");
-      scanf("%d", &a);
-      printf("what number to be inserted?\n");
-      scanf("%d", &b);
-      insert_item(order_queue, a, b);
-    }
-    else {
-
-      assign_order_to_queue(c, order_queue, MAX_QUEUE_SIZE);
-
-    }
-      print_queue(order_queue);
-    }
-
-
-}
-=======
->>>>>>> 44779f7d90e8cd1e2b08f3756a646cebcd87e78b
 
 void test_onway_functions(){
 
@@ -389,7 +327,7 @@ E[1].status = -1;
 
     printf("ny plassering %d\n", newElevatorNumber);
 
-    initiateQueue(E[newElevatorNumber]);
+    initiateQueue(E, newElevatorNumber);
 
     for(int i = 0; i < lengthOfElevatorArray; i++){
       printf("Tis is Queue %d\n", i);
