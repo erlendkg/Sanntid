@@ -5,8 +5,6 @@ int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
 
-  memset(&net_status, 0, sizeof net_status);
-
   net_status->server_socket = initialize_server_socket();
   pthread_mutex_init(&net_stat_lock, NULL);
 
@@ -23,8 +21,6 @@ int main_client(char const *server_ip) {
   int server_socket;
 
   Elev_info *this_elevator = malloc(sizeof(Elev_info));
-
-
 
   elev_set_motor_direction(DIRN_STOP);
   elev_init();
@@ -45,6 +41,7 @@ int main_client(char const *server_ip) {
       printf("No network connection could be established\n");
       printf("Currently Running in single elevator mode\n");
       single_elevator_mode(this_elevator, &server_socket, server_ip);
+      this_elevator->is_connected_to_network = 1;
       printf("Network connection established\n");
       printf("Switching to network mode\n");
     }
@@ -95,10 +92,13 @@ void *thread_listen_for_clients(void *net_status) {
     pthread_mutex_lock(&net_stat_lock);
     my_net_status->active_connections += 1;
     my_net_status->client_sockets[my_net_status->active_connections] = incoming_connection;
+    close(incoming_connection);
     pthread_mutex_unlock(&net_stat_lock);
+
 
     printf("Connection accepted\n");
     printf("Number of active connections: %d\n", my_net_status->active_connections);
+
 
   }
 }
@@ -155,7 +155,7 @@ int initialize_client_socket(char const* server_ip) {
           }
 
           if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-              perror("client: connect");
+              freeaddrinfo(servinfo);
               close(sockfd);
               return 2;
           }

@@ -53,13 +53,13 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
   while(1) {
 
     if((*server_socket = initialize_client_socket(server_ip)) != 2) {
-      this_elevator->is_connected_to_network = 1;
       pthread_cancel(button_input);
       pthread_cancel(go_to_floor);
-
       return 0;
     }
   }
+  pthread_join(go_to_floor, NULL);
+  pthread_join(button_input, NULL);
 }
 
 int run_elevator(Elev_info *this_elevator) {
@@ -72,7 +72,6 @@ int run_elevator(Elev_info *this_elevator) {
   char buf[100];
   char ip_addr[32] = "78.91.2.218";
 
-  flush_order_queue(order_queue, size_of_queue);
 
   elev_set_motor_direction(DIRN_STOP);
   elev_init();
