@@ -336,3 +336,11 @@ E[1].status = -1;
     }
 
   }
+
+  void testUnpackDataFromElev(){
+      char str[10] = "<2E2BT1F1>";
+
+      actOnMessageFromMaster(str);
+
+      
+  }

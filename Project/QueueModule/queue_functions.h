@@ -38,12 +38,14 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order);
 void disableElevator(struct Elevator_data *E);
 void distributeQueueToOtherElevators(struct Elevator_data E[N_ELEVATORS], int crashedQueue[MAX_QUEUE_SIZE]);
 
-//Functions for master to run
+void unpackMessageToVariables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor);
 
+//High level functions
 void initiateQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber);
 int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators);
 void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator);
 int isElevatorOnCorrectFloor(struct Elevator_data * E, int MsgFloor);
+void actOnMessageFromMaster(char *messageFromElevator);
 
 //Test functions (test_functions.c)
 
@@ -57,3 +59,4 @@ void test_all_buttons();
 void test_addorder();
 void testElevatorCrash();
 void testNewElevatorConnected();
+void testUnpackDataFromElev();

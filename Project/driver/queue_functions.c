@@ -344,3 +344,44 @@ int isElevatorOnCorrectFloor(struct Elevator_data * E, int MsgFloor){
   }
   return 0;
 }
+
+void unpackMessageToVariables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor) {
+
+
+  int tempMsgType = 0, tempMsgEl = 0, tempMsgFloor = 0, tempMsgButton = 0;
+
+  tempMsgType = str[1] - '0';
+
+
+  if (tempMsgType == 1) {
+
+    sscanf(str, "<1E%dF%d>", &tempMsgEl, &tempMsgFloor);
+  }
+
+  else if (tempMsgType == 2) {
+
+    sscanf(str, "<2E%dBT%dF%d>", &tempMsgEl, &tempMsgButton, &tempMsgFloor);
+
+  }
+
+  *msgType = tempMsgType;
+  *elevatorNumber = tempMsgEl;
+  *buttonType = tempMsgButton;
+  *elevatorFloor = tempMsgFloor;
+}
+
+
+int actOnMessageFromMaster(struct Elevator_data E[N_ELEVATORS], char *messageFromElevator){
+
+  int msgType, msgElevatorNumber, msgButtonType, msgElevatorFloor;
+
+  unpackMessageToVariables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor);
+
+  printf("MsgType %i\nElevator %i\nButton to floor %i\nButton type: %i\n\n",msgType, msgElevatorNumber, msgElevatorFloor, msgButtonType);
+
+  if (msgType == 1 && isElevatorOnCorrectFloor(&E[msgElevatorNumber],  MsgElevatorFloor)){
+
+
+
+    }
+}
