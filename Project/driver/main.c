@@ -10,16 +10,16 @@
 
 
  int main(int argc, char const *argv[]) {
-
    if (atoi(argv[1]) == 1) {
      main_server();
    }
-   else if (atoi(argv[1]) == 2 ) {
+   else if (atoi(argv[1]) == 2) {
+
      if(argc != 3) {
        printf("Not enough input arguments\n");
        exit(1);
      }
-
-     main_client(argv[2]);
+    main_client(argv[2]);
    }
+   return 0;
 }

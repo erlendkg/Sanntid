@@ -18,13 +18,14 @@ int main_server() {
 }
 
 int main_client(char const *server_ip) {
-  int server_socket;
 
+  int server_socket;
   Elev_info *this_elevator = malloc(sizeof(Elev_info));
 
-  elev_set_motor_direction(DIRN_STOP);
   elev_init();
+  elev_set_motor_direction(DIRN_STOP);
   run_down_until_hit_floor();
+
   this_elevator->current_floor = elev_get_floor_sensor_signal();
 
   this_elevator->is_busy = 0;
