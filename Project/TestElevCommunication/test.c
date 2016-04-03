@@ -17,13 +17,11 @@ int printmsg(char *str) {
   }
 
   else if (MsgType == 2) {
-
+    
     sscanf(str, "<2E%dBT%dF%d>", &MsgEl, &MsgButton, &MsgFloor);
     printf("Elevator %i\nButton to floor %i\nButton type: %i\n\n", MsgEl, MsgFloor, MsgButton);
 
   }
-
-
 }
 
 
