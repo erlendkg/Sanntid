@@ -2,16 +2,16 @@
 #include "elev.h"
 
 int main_server() {
-
-  Network_status net_status;
-
+  Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
 
   memset(&net_status, 0, sizeof net_status);
 
-  net_status.server_socket = initialize_server_socket();
+  net_status->server_socket = initialize_server_socket();
+  pthread_mutex_init(&net_stat_lock, NULL);
 
-  pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) &net_status);
+
+  pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) net_status);
 
   pthread_join(listen_for_clients, NULL);
 
@@ -63,24 +63,21 @@ int main_client(char const *server_ip) {
 }
 
 int wait_for_orders_from_server(int server_socket) {
-  int bytes_received;
-  char order[32];
-  int length[32];
-
+  return 0;
 
 }
 
 
 void *thread_listen_for_clients(void *net_status) {
 
-  Network_status* cast_net_status = (Network_status *) net_status;
+  Network_status* my_net_status = (Network_status *) net_status;
   int incoming_connection;
   struct sockaddr_storage their_addr;
   socklen_t sin_size;
 
   while(1) {
 
-  if(listen(cast_net_status->server_socket, BACKLOG) == -1) {
+  if(listen(my_net_status->server_socket, BACKLOG) == -1) {
     perror("listen");
     exit(1);
   }
@@ -89,19 +86,19 @@ void *thread_listen_for_clients(void *net_status) {
 
     sin_size = sizeof their_addr;
 
-    incoming_connection = accept(cast_net_status->server_socket, (struct sockaddr*) &their_addr, &sin_size);
+    incoming_connection = accept(my_net_status->server_socket, (struct sockaddr*) &their_addr, &sin_size);
     if (incoming_connection == -1) {
       perror("accept");
       continue;
     }
 
-    //Mutex Lock
-    cast_net_status->active_connetions += 1;
-    cast_net_status->client_sockets[cast_net_status->active_connetions] = incoming_connection;
-    //Mutex Open
+    pthread_mutex_lock(&net_stat_lock);
+    my_net_status->active_connections += 1;
+    my_net_status->client_sockets[my_net_status->active_connections] = incoming_connection;
+    pthread_mutex_unlock(&net_stat_lock);
 
     printf("Connection accepted\n");
-    printf("Number of active connections: %d\n", cast_net_status->active_connetions);
+    printf("Number of active connections: %d\n", my_net_status->active_connections);
 
   }
 }
@@ -111,9 +108,27 @@ void *thread_maintain_active_connections(void *net_status) {
 
 }
 
-void *thread_recieve_orders_from_elevators(void *elev_status) {
+void *thread_recieve_orders_from_elevators(void *net_status) {
+    Network_status *my_net_status = (Network_status *) net_status;
+
+    int bytes_received, i;
+    int max_data_size = sizeof(Elev_info);
+    char buf[max_data_size];
+
+    while(1){
+      for(i = 0; i = (my_net_status->active_connections -1); i++) {
+        bytes_received = recv(my_net_status->client_sockets[i], buf, max_data_size -1, 0);
+        update_elevator_status();
+        memset(&buf, 0, sizeof(buf));
+    }
+  }
 
 
+
+}
+
+int update_elevator_status() {
+  return 1;
 }
 
 

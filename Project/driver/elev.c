@@ -54,7 +54,6 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
 
     if((*server_socket = initialize_client_socket(server_ip)) != 2) {
       this_elevator->is_connected_to_network = 1;
-
       pthread_cancel(button_input);
       pthread_cancel(go_to_floor);
 
