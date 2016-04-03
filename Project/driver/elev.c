@@ -126,28 +126,31 @@ void* listen_for_button_input(void *this_elevator) {
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
           pthread_mutex_lock(&elev_info_lock);
-          printf("Floor %d, Inside\n", (floor+1));
+          //printf("Floor %d, Inside\n", (floor+1));
           cast_this_elevator->button_floor = (floor +1);
           cast_this_elevator->button_type = 2;
           cast_this_elevator->button_click = 1;
+          cast_this_elevator->is_busy = 1;
           cast_this_elevator->desired_floor = (floor +1);
           pthread_mutex_unlock(&elev_info_lock);
       }
       if (elev_get_button_signal(1, floor) == 1){
           pthread_mutex_lock(&elev_info_lock);
-          printf("Floor %d, Down\n", (floor+1));
+          //printf("Floor %d, Down\n", (floor+1));
           cast_this_elevator->button_floor = (floor +1);
           cast_this_elevator->button_type = 1;
           cast_this_elevator->button_click = 1;
+          cast_this_elevator->is_busy = 1;
           cast_this_elevator->desired_floor = (floor +1);
           pthread_mutex_unlock(&elev_info_lock);
       }
       if (elev_get_button_signal(0, floor) == 1){
           pthread_mutex_lock(&elev_info_lock);
-          printf("Floor %d, Up\n", (floor+1));
+          //printf("Floor %d, Up\n", (floor+1));
           cast_this_elevator->button_floor = (floor +1);
           cast_this_elevator->button_type = 0;
-          cast_this_elevator->button_type = 1;
+          cast_this_elevator->button_click = 1;
+          cast_this_elevator->is_busy = 1;
           cast_this_elevator->desired_floor = (floor +1);
           pthread_mutex_unlock(&elev_info_lock);
       }
@@ -163,17 +166,22 @@ void* elev_go_to_floor(void *this_elevator) {
 
   while(1){
 
-    printf("%d %d\n", cast_this_elevator->current_floor, cast_this_elevator->desired_floor);
+
 
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
-      if (floorSignal != cast_this_elevator->current_floor) {
+      if (floorSignal +1 != cast_this_elevator->current_floor) { //INSIDE HERE WE NEED TO SEND A MESSAGE TO MASTER **************************
 
         //pthread_mutex_lock(&elev_info_lock);
         cast_this_elevator->current_floor = elev_get_floor_sensor_signal() +1;
+        printf("Current Floor: %d    \tDesiredFloor: %d\n", cast_this_elevator->current_floor, cast_this_elevator->desired_floor);
         //pthread_mutex_unlock(&elev_info_lock);
         elev_set_floor_indicator((cast_this_elevator->current_floor -1));
     }
   }
+    if(cast_this_elevator->desired_floor == cast_this_elevator->current_floor && cast_this_elevator->is_busy == 1){
+      printf("Elevator have reached desired floor\n");
+      cast_this_elevator->is_busy = 0;
+    }
 
     if (cast_this_elevator->current_floor > cast_this_elevator->desired_floor){
       elev_set_motor_direction(DIRN_DOWN);
