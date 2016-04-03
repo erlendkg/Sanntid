@@ -43,8 +43,6 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
 
-  run_down_until_hit_floor();
-  elev_set_motor_direction(DIRN_STOP);
 
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
   pthread_create(&go_to_floor, NULL, elev_go_to_floor, (void *) this_elevator);
@@ -76,6 +74,7 @@ int run_elevator(Elev_info *this_elevator) {
   elev_set_motor_direction(DIRN_STOP);
   elev_init();
   run_down_until_hit_floor();
+  elev_set_motor_direction(DIRN_STOP);
 
   pthread_create(&button_input, NULL, listen_for_button_input, NULL);
   pthread_create(&go_to_floor, NULL, elev_go_to_floor, NULL);
@@ -100,15 +99,20 @@ int run_down_until_hit_floor(){
   int currentFloor;
 
   currentFloor = elev_get_floor_sensor_signal();
+    printf("%d", currentFloor);
+  if(currentFloor == -1) {
+    elev_set_motor_direction(DIRN_DOWN);
+  }
 
   while((currentFloor == -1)) {
-     elev_set_motor_direction(DIRN_DOWN);
-     currentFloor = elev_get_floor_sensor_signal();
+
+    if((currentFloor != -1)) {
+         elev_set_motor_direction(DIRN_STOP);
+        return 1;
+    }
    }
 
-   elev_set_motor_direction(DIRN_STOP);
 
-   return 1;
 }
 
 
@@ -121,28 +125,31 @@ void* listen_for_button_input(void *this_elevator) {
 
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
+          pthread_mutex_lock(&elev_info_lock);
           printf("Floor %d, Inside\n", (floor+1));
           cast_this_elevator->button_floor = (floor +1);
           cast_this_elevator->button_type = 2;
           cast_this_elevator->button_click = 1;
           cast_this_elevator->desired_floor = (floor +1);
-          sleep(1);
+          pthread_mutex_unlock(&elev_info_lock);
       }
       if (elev_get_button_signal(1, floor) == 1){
+          pthread_mutex_lock(&elev_info_lock);
           printf("Floor %d, Down\n", (floor+1));
           cast_this_elevator->button_floor = (floor +1);
           cast_this_elevator->button_type = 1;
           cast_this_elevator->button_click = 1;
           cast_this_elevator->desired_floor = (floor +1);
-          sleep(1);
+          pthread_mutex_unlock(&elev_info_lock);
       }
       if (elev_get_button_signal(0, floor) == 1){
+          pthread_mutex_lock(&elev_info_lock);
           printf("Floor %d, Up\n", (floor+1));
           cast_this_elevator->button_floor = (floor +1);
           cast_this_elevator->button_type = 0;
           cast_this_elevator->button_type = 1;
           cast_this_elevator->desired_floor = (floor +1);
-          sleep(1);
+          pthread_mutex_unlock(&elev_info_lock);
       }
      }
     }
@@ -150,20 +157,23 @@ void* listen_for_button_input(void *this_elevator) {
   return NULL;
 }
 
-void* elev_go_to_floor(void *this_elevator)
-{
+void* elev_go_to_floor(void *this_elevator) {
   int floorSignal;
   Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
+
   while(1){
 
     printf("%d %d\n", cast_this_elevator->current_floor, cast_this_elevator->desired_floor);
-    sleep(1);
 
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal != cast_this_elevator->current_floor) {
-        cast_this_elevator->current_floor = elev_get_floor_sensor_signal();
-        cast_this_elevator->is_busy = 1;
+
+        //pthread_mutex_lock(&elev_info_lock);
+        cast_this_elevator->current_floor = elev_get_floor_sensor_signal() +1;
+        //pthread_mutex_unlock(&elev_info_lock);
+        elev_set_floor_indicator((cast_this_elevator->current_floor -1));
     }
+  }
 
     if (cast_this_elevator->current_floor > cast_this_elevator->desired_floor){
       elev_set_motor_direction(DIRN_DOWN);
@@ -175,11 +185,10 @@ void* elev_go_to_floor(void *this_elevator)
       elev_set_motor_direction(DIRN_STOP);
 
     }
-    elev_set_floor_indicator(cast_this_elevator->current_floor);
+
   }
 
-}
-return NULL;
+  return NULL;
 }
 
 

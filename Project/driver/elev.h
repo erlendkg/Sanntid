@@ -1,3 +1,4 @@
+#include <pthread.h>
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
 
@@ -32,6 +33,9 @@ typedef struct {
   int button_type;  //0 = up, 1 = down, 2 = inside
   int is_connected_to_network;
 } Elev_info;
+
+pthread_mutex_t elev_info_lock;
+
 
 
 
