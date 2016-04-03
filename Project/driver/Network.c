@@ -22,9 +22,12 @@ int main_client(char const *server_ip) {
   int server_socket;
   Elev_info *this_elevator = malloc(sizeof(Elev_info));
 
+  pthread_mutex_init(&elev_info_lock, NULL);
+
   elev_init();
   elev_set_motor_direction(DIRN_STOP);
   run_down_until_hit_floor();
+  elev_set_motor_direction(DIRN_STOP);
 
   this_elevator->current_floor = elev_get_floor_sensor_signal();
 
