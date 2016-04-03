@@ -33,6 +33,7 @@ int initialize_server_socket();
 int initialize_client_socket(char const *server_ip);
 int wait_for_orders_from_server(int server_socket);
 int update_elevator_status();
+int fd_set_sockets();
 
 //void* listen_for_orders(void *sockfd);
 //char *get_string(int msgType);

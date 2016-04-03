@@ -1,13 +1,82 @@
 #include "Network.h"
 #include "elev.h"
 
+int fd_set_sockets() {
+  int max_clients = 3;
+  int client_sockets[max_clients];
+  int master_socket;
+  int i;
+  int yes = 1;
+  struct sockaddr_in address;
+  int addrlen;
+  int max_sd;
+  int sd, activity;
+
+  fd_set readfds;
+
+  for (i = 0; i < max_clients; i++) {
+    client_sockets[i] = 0;
+  }
+
+  if((master_socket = socket(AF_INET, SOCK_STREAM, 0))  == 0) {
+    perror("master socket failed");
+    exit(1);
+  }
+
+  if(setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
+    perror("setsockopt");
+    exit(1);
+  }
+
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = INADDR_ANY;
+  address.sin_port = htons(PORT);
+
+  if(bind(master_socket, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    perror("bind failed");
+    exit(1);
+  }
+  printf("Server listening on port %d \n", PORT);
+
+  if(listen(master_socket,max_clients) < 0) {
+    perror("Listen");
+    exit(1);
+  }
+
+  addrlen = sizeof(address);
+  printf("Waiting for incoming connections...\n");
+
+  while(1) {
+    FD_ZERO(&readfds);
+
+    FD_SET(master_socket, &readfds);
+    max_sd = master_socket;
+
+    for (i = 0; i < max_clients; i++) {
+      sd = client_sockets[i];
+
+      if(sd > 0) {
+        FD_SET(sd, &readfds);
+      }
+
+      if(sd > max_sd) {
+        max_sd = sd;
+      }
+    }
+
+    activity = select(max_sd +1, &readfds,NULL, NULL, NULL);
+
+    if(FD_ISSET(master_socket, &readfds))
+
+  }
+}
+
 int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
 
   net_status->server_socket = initialize_server_socket();
   pthread_mutex_init(&net_stat_lock, NULL);
-
 
   pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) net_status);
 
@@ -30,11 +99,7 @@ int main_client(char const *server_ip) {
   this_elevator->current_floor = elev_get_floor_sensor_signal();
 
   this_elevator->is_busy = 0;
-
-  if((server_socket = initialize_client_socket(server_ip)) == 2) {
-    printf("Failed to create socket\n");
-    this_elevator->is_connected_to_network = 0;
-  }
+  this_elevator->is_connected_to_network = 0;
 
 
   while(1) {
@@ -48,10 +113,9 @@ int main_client(char const *server_ip) {
       printf("Switching to network mode\n");
     }
 
-
-    if (this_elevator->is_busy == 0 && this_elevator->is_connected_to_network == 1)
+    if (this_elevator->is_connected_to_network == 1)
     {
-      //Lytter etter ordre
+      printf("Elevator is now i network mode");
       //Hvis får ordre sender til server
       //Mottar ordre
       //Utfører Oppgave
@@ -101,7 +165,6 @@ void *thread_listen_for_clients(void *net_status) {
     printf("Connection accepted\n");
     printf("Number of active connections: %d\n", my_net_status->active_connections);
 
-
   }
 }
 
@@ -120,11 +183,10 @@ void *thread_recieve_orders_from_elevators(void *net_status) {
     while(1){
       for(i = 0; i = (my_net_status->active_connections -1); i++) {
         bytes_received = recv(my_net_status->client_sockets[i], buf, max_data_size -1, 0);
-        update_elevator_status();
+        printf("%c\n", buf);
         memset(&buf, 0, sizeof(buf));
     }
   }
-
 
 
 }
