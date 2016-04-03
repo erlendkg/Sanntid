@@ -39,11 +39,6 @@ void updateElevatorStruct(int order_queue[MAX_QUEUE_SIZE], int * status, int * q
   }
 }
 
-void disableElevator(struct Elevator_data *E){
-
-  E->status = -1;
-}
-
 int isElevatorDisabled(int status){
 
     if (status == -1){
@@ -52,20 +47,25 @@ int isElevatorDisabled(int status){
     else {return 0;}
 }
 
-void distributeQueueToOtherElevators(struct Elevator_data E[N_ELEVATORS], int crashedQueue[MAX_QUEUE_SIZE]){
+void disableElevatorAndDistributeQueueToOtherElevators(struct Elevator_data E[N_ELEVATORS], int crashedElev, int lengthOfElevatorArray){
+
+  pthread_mutex_lock(&lock);
 
   int i = 0;
 
-  while (crashedQueue[i] != 0){
+  E[crashedElev].status = -1;
 
-    addNewOrderToQueue(E,crashedQueue[i],0,0);
+  while (E[crashedElev].queue[i] != 0){
+
+    addNewOrderToQueue(E,E[crashedElev].queue[i],0,0,lengthOfElevatorArray);
 
     i++;
   }
+  pthread_mutex_unlock(&lock);
 }
 
 
-void initiateQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber){
+void activateSingleQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber){
 
   size_t l = MAX_QUEUE_SIZE * sizeof (E[elevatorNumber].queue[0]);
   flush_order_queue(E[elevatorNumber].queue,l);
@@ -77,6 +77,26 @@ void initiateQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber){
 
 }
 
+int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators){
+
+  int i;
+
+  for(i = 0; i<numberOfElevators; i++){
+    if (E[i].status == -1){
+      return i;
+    }
+  }
+  return numberOfElevators;
+}
+
+
+void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
+
+      for(int i = 0; i < N_ELEVATORS; i++){
+        size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
+        flush_order_queue(E[i].queue,l);
+      }
+}
 
 void removeItemFromQueue(int order_queue[MAX_QUEUE_SIZE]){
   for (int i = 0; i < MAX_QUEUE_SIZE-1; i++){
@@ -92,6 +112,7 @@ int insert_item(int order_queue[MAX_QUEUE_SIZE], int pos, int num){
   }
     order_queue[pos] = num;
 }
+
 
 
 int is_order_on_the_way(int currentFloor, int status, int button_order){
@@ -192,6 +213,7 @@ void place_order_not_on_the_way(int order_queue[MAX_QUEUE_SIZE], int * status, i
 }
 
 
+
 void place_bt2_order(struct Elevator_data * E, int button_order){
 
   bool on_way;
@@ -211,14 +233,14 @@ void place_bt2_order(struct Elevator_data * E, int button_order){
     }
 }
 
-void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
+void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order, int lengthOfElevatorArray){
 
   int closest_elev = -1;
   int closeness = 9999;
   int smallest_queue = 9999;
   int smallest_elev;
 
-  for(int i = 0; i < N_ELEVATORS; i++){
+  for(int i = 0; i < lengthOfElevatorArray; i++){
 
     //Check if the elevator is disabled, jump over it if it is.
     i = i + isElevatorDisabled(E[i].status);
@@ -241,12 +263,12 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
     }
 
     //the order was not on the way for any elevators,
-    if((i >= N_ELEVATORS - 1) && (closest_elev != -1)){
+    if((i >= lengthOfElevatorArray - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
       updateElevatorStruct(E[i].queue, &E[i].status, &E[i].queueSize, E[i].currentFloor);
 
     }
-    else if((i >= N_ELEVATORS - 1) && (closest_elev == -1)){
+    else if((i >= lengthOfElevatorArray - 1) && (closest_elev == -1)){
       //insert_item(E[smallest_elev].queue, 0, button_order);
 
       insert_item(E[smallest_elev].queue, E[smallest_elev].queueSize, button_order);
@@ -258,14 +280,14 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
 
 }
 
-void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
+void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order, int lengthOfElevatorArray){
 
   int closest_elev = -1;
   int closeness = 9999;
   int smallest_queue = 9999;
   int smallest_elev;
 
-  for(int i = 0; i < N_ELEVATORS; i++){
+  for(int i = 0; i < lengthOfElevatorArray; i++){
     //Check if the elevator is disabled, jump over it if it is.
     i = i + isElevatorDisabled(E[i].status);
 
@@ -287,12 +309,12 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
     }
 
     //the order was not on the way for any elevators,
-    if((i == N_ELEVATORS - 1) && (closest_elev != -1)){
+    if((i == lengthOfElevatorArray - 1) && (closest_elev != -1)){
 
       insert_item(E[closest_elev].queue, 0, button_order);
       updateElevatorStruct(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queueSize, E[closest_elev].currentFloor);
         }
-    else if((i == N_ELEVATORS - 1) && (closest_elev == -1)){
+    else if((i == lengthOfElevatorArray - 1) && (closest_elev == -1)){
 
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
       updateElevatorStruct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queueSize, E[smallest_elev].currentFloor);
@@ -300,28 +322,17 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order){
   }
 }
 
-int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators){
 
-  int i;
-
-  for(i = 0; i<numberOfElevators; i++){
-    if (E[i].status == -1){
-      return i;
-    }
-  }
-    return numberOfElevators;
-}
-
-void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator){
+void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator, int lengthOfElevatorArray){
 
   if (buttonType == 0) {
 
-    place_bt0_order(E, desired_floor);
+    place_bt0_order(E, desired_floor, lengthOfElevatorArray);
 
   }
   else if (buttonType == 1) {
 
-    place_bt1_order(E, desired_floor);
+    place_bt1_order(E, desired_floor, lengthOfElevatorArray);
 
   }
   else if (buttonType == 2) {
@@ -369,8 +380,7 @@ void unpackMessageToVariables(char *str, int *msgType, int *elevatorNumber, int 
   *elevatorFloor = tempMsgFloor;
 }
 
-
-char *actOnMessageFromMaster(struct Elevator_data E[N_ELEVATORS], char *messageFromElevator){
+char *actOnMessageFromMaster(struct Elevator_data E[N_ELEVATORS], char *messageFromElevator, int lengthOfElevatorArray){
 
   int msgType, msgElevatorNumber, msgButtonType, msgElevatorFloor;
 
@@ -378,22 +388,29 @@ char *actOnMessageFromMaster(struct Elevator_data E[N_ELEVATORS], char *messageF
 
   printf("MsgType %i\nElevator %i\nFloor %i\nButton type: %i\n\n",msgType, msgElevatorNumber, msgElevatorFloor, msgButtonType);
 
+  pthread_mutex_lock(&lock);
 
   if (msgType == 1 && isElevatorOnCorrectFloor(&E[msgElevatorNumber], msgElevatorFloor)){
 
-      char *newMessage = (char*) malloc(10 * sizeof(int));
+      char *newMessage = (char*) malloc(16 * sizeof(int));
 
       sprintf(newMessage, "<1E%dF%d>", msgElevatorNumber, E[msgElevatorNumber].queue[0]);
+
+      pthread_mutex_unlock(&lock);
 
       return newMessage;
 
     }
     else if (msgType == 2){
 
-      addNewOrderToQueue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber);
+      addNewOrderToQueue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, lengthOfElevatorArray);
+      pthread_mutex_unlock(&lock);
+
       return "1";
     }
     else{
+      pthread_mutex_unlock(&lock);
+
       return "0";
     }
 
