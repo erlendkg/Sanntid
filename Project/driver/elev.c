@@ -157,21 +157,23 @@ void* listen_for_button_input(void *this_elevator) {
   return NULL;
 }
 
-void* elev_go_to_floor(void *this_elevator)
-{
+void* elev_go_to_floor(void *this_elevator) {
   int floorSignal;
   Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
+
   while(1){
 
     printf("%d %d\n", cast_this_elevator->current_floor, cast_this_elevator->desired_floor);
 
-    if (floorSignal = elev_get_floor_sensor_signal() != -1) {
+    if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal != cast_this_elevator->current_floor) {
-        pthread_mutex_lock(&elev_info_lock);
-        cast_this_elevator->current_floor = elev_get_floor_sensor_signal() +1;
-        pthread_mutex_unlock(&elev_info_lock);
 
+        //pthread_mutex_lock(&elev_info_lock);
+        cast_this_elevator->current_floor = elev_get_floor_sensor_signal() +1;
+        //pthread_mutex_unlock(&elev_info_lock);
+        elev_set_floor_indicator((cast_this_elevator->current_floor -1));
     }
+  }
 
     if (cast_this_elevator->current_floor > cast_this_elevator->desired_floor){
       elev_set_motor_direction(DIRN_DOWN);
@@ -183,11 +185,10 @@ void* elev_go_to_floor(void *this_elevator)
       elev_set_motor_direction(DIRN_STOP);
 
     }
-    elev_set_floor_indicator(cast_this_elevator->current_floor);
+
   }
 
-}
-return NULL;
+  return NULL;
 }
 
 
