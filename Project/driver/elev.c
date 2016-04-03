@@ -43,10 +43,8 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
 
-
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
   pthread_create(&go_to_floor, NULL, elev_go_to_floor, (void *) this_elevator);
-
 
   while(1) {
 
@@ -58,6 +56,26 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
   }
   pthread_join(go_to_floor, NULL);
   pthread_join(button_input, NULL);
+}
+
+int network_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
+  pthread_t button_input, go_to_floor, send_status_to_server, recieve_orders;
+
+  pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
+  pthread_create(&go_to_floor, NULL, elev_go_to_floor, (void *) this_elevator);
+
+
+}
+
+void *send_status_to_server(void* this_elevator) {
+  Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
+  char message[sizeof(Elev_info)];
+  int length = sizeof(Elev_info);
+
+  while(1) {
+  sprintf(message, "%d%d", my_this_elevator->current_floor, my_this_elevator->desired_floor);
+  sendall(my_this_elevator->server_socket, message, &length);
+  }
 }
 
 int run_elevator(Elev_info *this_elevator) {
@@ -111,7 +129,6 @@ int run_down_until_hit_floor(){
         return 1;
     }
    }
-
 
 }
 

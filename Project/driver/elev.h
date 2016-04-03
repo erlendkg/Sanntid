@@ -32,18 +32,17 @@ typedef struct {
   int button_floor;
   int button_type;  //0 = up, 1 = down, 2 = inside
   int is_connected_to_network;
+  int server_socket;
 } Elev_info;
 
 pthread_mutex_t elev_info_lock;
 
-
-
-
-
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
+int network_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
+
 int run_elevator(Elev_info *this_elevator);
 int run_down_until_hit_floor();
-
+void *send_status_to_server(void* this_elevator);
 
 void* listen_for_orders(void *sockfd);
 
