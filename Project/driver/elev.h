@@ -23,7 +23,6 @@ typedef enum tag_elev_lamp_type {
 } elev_button_type_t;
 
 typedef struct {
-
   int num;
   int desired_floor;
   int current_floor;
