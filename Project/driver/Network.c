@@ -1,73 +1,74 @@
 #include "Network.h"
 #include "elev.h"
 
-int fd_set_sockets() {
-  int max_clients = 3;
-  int client_sockets[max_clients];
-  int master_socket;
-  int i;
-  int yes = 1;
+void *listen_for_and_maintain_incomming_connections(void* net_status)
+{
+  Network_status *my_net_status = (Network_status *) net_status;
   struct sockaddr_in address;
-  int addrlen;
-  int max_sd;
-  int sd, activity;
-
+  int max_sd, sd, i, activity;
+  int new_socket;
+  int valread;
   fd_set readfds;
+  int addrlen = sizeof address;
 
-  for (i = 0; i < max_clients; i++) {
-    client_sockets[i] = 0;
-  }
+  char buffer[sizeof(Network_status)];
 
-  if((master_socket = socket(AF_INET, SOCK_STREAM, 0))  == 0) {
-    perror("master socket failed");
+  if(listen(my_net_status->master_socket, MAX_NUMBER_OF_ELEVS) < 0) {
+    perror("listen");
     exit(1);
   }
-
-  if(setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
-    perror("setsockopt");
-    exit(1);
-  }
-
-  address.sin_family = AF_INET;
-  address.sin_addr.s_addr = INADDR_ANY;
-  address.sin_port = htons(PORT);
-
-  if(bind(master_socket, (struct sockaddr *)&address, sizeof(address)) < 0) {
-    perror("bind failed");
-    exit(1);
-  }
-  printf("Server listening on port %d \n", PORT);
-
-  if(listen(master_socket,max_clients) < 0) {
-    perror("Listen");
-    exit(1);
-  }
-
-  addrlen = sizeof(address);
-  printf("Waiting for incoming connections...\n");
 
   while(1) {
     FD_ZERO(&readfds);
 
-    FD_SET(master_socket, &readfds);
-    max_sd = master_socket;
+    FD_SET(my_net_status->master_socket, &readfds);
+    max_sd = my_net_status->master_socket;
 
-    for (i = 0; i < max_clients; i++) {
-      sd = client_sockets[i];
+    for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+      sd = my_net_status->client_sockets[i];
 
       if(sd > 0) {
         FD_SET(sd, &readfds);
       }
 
-      if(sd > max_sd) {
+      if( sd > max_sd) {
         max_sd = sd;
       }
     }
 
-    activity = select(max_sd +1, &readfds,NULL, NULL, NULL);
+    activity = select(max_sd +1, &readfds, NULL, NULL, NULL);
 
-    if(FD_ISSET(master_socket, &readfds))
+    if(FD_ISSET(my_net_status->master_socket, &readfds)) {
+      if((new_socket = accept(my_net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
+        perror("accept");
+        break;
+      }
+      printf("New elevator connected, socket fd is %d, ip is : %s, port %d\n", new_socket, inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
 
+      for (i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+        if( my_net_status->client_sockets[i] == 0 ) {
+              my_net_status->client_sockets[i] = new_socket;
+              my_net_status->active_connections += 1;
+              printf("Adding to list of sockets as %d\n" , i);
+              break;
+            }
+        }
+    }
+    for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+      sd = my_net_status->client_sockets[i];
+
+      if(FD_ISSET(sd, &readfds)) {
+        if((valread = read(sd, &buffer, 1024)) == 0) {
+          getpeername(sd , (struct sockaddr*)&address , (socklen_t*)&addrlen);
+          printf("Client disconnected , ip %s , port %d \n" , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
+
+          //Close the socket and mark as 0 in list for reuse
+          close(sd);
+          my_net_status->client_sockets[i] = 0;
+          my_net_status->active_connections -= 1;
+        }
+      }
+    }
   }
 }
 
@@ -75,10 +76,10 @@ int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
 
-  net_status->server_socket = initialize_server_socket();
+  net_status->master_socket = initialize_server_socket();
   pthread_mutex_init(&net_stat_lock, NULL);
 
-  pthread_create(&listen_for_clients, NULL, thread_listen_for_clients, (void *) net_status);
+  pthread_create(&listen_for_clients, NULL, listen_for_and_maintain_incomming_connections, (void *) net_status);
 
   pthread_join(listen_for_clients, NULL);
 
@@ -131,47 +132,6 @@ int wait_for_orders_from_server(int server_socket) {
 }
 
 
-void *thread_listen_for_clients(void *net_status) {
-
-  Network_status* my_net_status = (Network_status *) net_status;
-  int incoming_connection;
-  struct sockaddr_storage their_addr;
-  socklen_t sin_size;
-
-  while(1) {
-
-  if(listen(my_net_status->server_socket, BACKLOG) == -1) {
-    perror("listen");
-    exit(1);
-  }
-
-    printf("server: waiting for connections...\n");
-
-    sin_size = sizeof their_addr;
-
-    incoming_connection = accept(my_net_status->server_socket, (struct sockaddr*) &their_addr, &sin_size);
-    if (incoming_connection == -1) {
-      perror("accept");
-      continue;
-    }
-
-    pthread_mutex_lock(&net_stat_lock);
-    my_net_status->active_connections += 1;
-    my_net_status->client_sockets[my_net_status->active_connections] = incoming_connection;
-    close(incoming_connection);
-    pthread_mutex_unlock(&net_stat_lock);
-
-
-    printf("Connection accepted\n");
-    printf("Number of active connections: %d\n", my_net_status->active_connections);
-
-  }
-}
-
-void *thread_maintain_active_connections(void *net_status) {
-    Network_status* cast_net_status = (Network_status *) net_status;
-
-}
 
 void *thread_recieve_orders_from_elevators(void *net_status) {
     Network_status *my_net_status = (Network_status *) net_status;
