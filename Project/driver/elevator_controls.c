@@ -1,9 +1,5 @@
 #include "elevator_controls.h"
 
-int main() {
-  
-}
-
 int go_to_floor(int current_floor, int desired_floor) {
 
   while(current_floor != desired_floor) {
@@ -27,73 +23,71 @@ int return_current_floor() {
   return current_floor;
 }
 
-int add_order_to_history(int floor, int button_type, Order *order_history[MAX_QUEUE_SIZE]) {
+int add_order_to_history(int floor, int button_type, Order order_history[MAX_QUEUE_SIZE]) {
   int i;
 
   for(i = 0; i < MAX_QUEUE_SIZE; i++) {
-    if(order_history[i]->floor == 0) {
-      order_history[i]->floor = floor;
-      order_history[i]->button_type = button_type;
+    if(order_history[i].floor == 0) {
+
+      order_history[i].floor = floor;
+      order_history[i].button_type = button_type;
       return 0;
     }
     else {
       return 1;
     }
   }
+  return 0;
 }
 
-int empty_order_history(Order *order_history[MAX_QUEUE_SIZE]) {
+int empty_order_history(Order order_history[MAX_QUEUE_SIZE]) {
   int i;
 
   for(i = 0; i < MAX_QUEUE_SIZE; i++) {
-    order_history[i]->floor = 0;
-    order_history[i]->button_type;
+    order_history[i].floor = 0;
+    order_history[i].button_type;
   }
   return 0;
 }
 
 Order return_button_input() {
-    int floors;
+    int floor;
     Order my_order;
-    int i;
 
     while(1) {
-      for(floors = 0; floors<N_FLOORS; floors++) {
-        if(elev_get_button_signal(2, floors) == 1) {
-          my_order.floor = floors;
+      for(floor = 0; floor < N_FLOORS; floor++) {
+        if(elev_get_button_signal(2, floor) == 1) {
+          my_order.floor = (floor +1);
           my_order.button_type = 2;
+          return my_order;
+        }
+        if(elev_get_button_signal(1,floor) == 1) {
+          my_order.floor = (floor+1);
+          my_order.button_type = 1;
 
           return my_order;
-      } else if (elev_get_button_signal(1,floors) == 1) {
-          my_order.floor = floors;
-          my_order.button_type = 2;
+        }
 
-          return my_order;
-
-      } else if (elev_get_button_signal(0,floors) == 1) {
-        my_order.floor = floors;
-        my_order.button_type = 2;
+       if(elev_get_button_signal(0,floor) == 1) {
+        my_order.floor = (floor+1);
+        my_order.button_type = 0;
 
         return my_order;
 
-      } else {
-        my_order.floor = -1;
-        my_order.button_type = -1;
-
-        return my_order;
+        }
       }
     }
   }
-}
 
-void *thread_monitor_button_inputs(void *order_history[MAX_QUEUE_SIZE]) {
+
+void *thread_monitor_button_inputs(void* order_history[MAX_QUEUE_SIZE]) {
   Order *my_order_history = (Order *) order_history;
   Order incoming_order;
 
   while(1) {
     incoming_order = return_button_input();
     if(incoming_order.floor != -1) {
-      add_order_to_history(incoming_order.floor, incoming_order.button_type, (Order *)my_order_history);
+      add_order_to_history(incoming_order.floor, incoming_order.button_type, my_order_history);
     }
   }
 }
