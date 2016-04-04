@@ -40,6 +40,7 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
+
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
   this_elevator->desired_floor = 1;
@@ -131,7 +132,6 @@ int run_elevator(Elev_info *this_elevator) {
   return 1;
 }
 
-
 int run_down_until_hit_floor(){
   int currentFloor;
 
@@ -152,7 +152,6 @@ int run_down_until_hit_floor(){
    }
 
 }
-
 
 void* listen_for_button_input(void *this_elevator) {
 
@@ -237,6 +236,7 @@ void* elev_go_to_floor(void *this_elevator) {
   return NULL;
 }
 
+<<<<<<< HEAD
 int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
   int floorSignal;
 
@@ -310,6 +310,8 @@ int test_mode(Elev_info *this_elevator) {
 }
 
 
+=======
+>>>>>>> 90fabcd55de35ff56e16336051e809a79415b504
 int elev_hold_door_open()
 {
   int floor;
@@ -324,7 +326,6 @@ int elev_hold_door_open()
   elev_set_door_open_lamp(0);
   return 1;
 }
-
 
 //Basic functions below
 void elev_init(void) {

@@ -67,7 +67,7 @@ void *listen_for_and_maintain_incomming_connections(void* net_status)
           my_net_status->client_sockets[i] = 0;
           my_net_status->active_connections -= 1;
         } else {
-            //recv(sd, &buffer, 1024,0);
+          //recv(sd, &buffer, 1024,0);
             printf("%s\n",buffer );
 
         }
