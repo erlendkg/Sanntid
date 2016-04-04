@@ -8,7 +8,7 @@ CFLAGS += -std=gnu11 -g -Wall -Wextra
 LDFLAGS += -lcomedi -lm -lpthread
 
 # list of sources
-ELEVSRC = elev.c io.c main.c Network.c modules/error_and_logging.c 
+ELEVSRC = elev.c io.c main.c Network.c modules/error_and_logging.c QueueModule/queue_functions.c 
 
 # program executable file name.
 TARGET = elevator

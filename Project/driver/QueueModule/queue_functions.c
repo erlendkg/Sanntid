@@ -105,7 +105,7 @@ void removeItemFromQueue(int order_queue[MAX_QUEUE_SIZE]){
     order_queue[MAX_QUEUE_SIZE-1] = 0;
 }
 
-int insert_item(int order_queue[MAX_QUEUE_SIZE], int pos, int num){
+void insert_item(int order_queue[MAX_QUEUE_SIZE], int pos, int num){
 
   for (int i = MAX_QUEUE_SIZE; i > pos; i--){
     order_queue[i] = order_queue[i-1];

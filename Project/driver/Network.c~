@@ -66,38 +66,23 @@ void *listen_for_and_maintain_incomming_connections(void* net_status)
           close(sd);
           my_net_status->client_sockets[i] = 0;
           my_net_status->active_connections -= 1;
-        } else {
-            //recv(sd, &buffer, 1024,0);
-            printf("%s\n",buffer );
-
-        }
         }
       }
     }
+  }
 }
 
 int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
-  pthread_t listen_for_clients, listen_to_elevators;
-
-
+  pthread_t listen_for_clients;
 
   net_status->master_socket = initialize_server_socket();
   pthread_mutex_init(&net_stat_lock, NULL);
 
   pthread_create(&listen_for_clients, NULL, listen_for_and_maintain_incomming_connections, (void *) net_status);
 
-
-  int listening_thread_is_active = 0;
-  // while(1){
-  //   if (net_status->active_connections > 0 && listening_thread_is_active == 0){
-  //
-  //     pthread_create(&listen_to_elevators, NULL, thread_recieve_orders_from_elevators, (void*) net_status);
-  //     listening_thread_is_active = 1;
-  //   }
-  // }
   pthread_join(listen_for_clients, NULL);
-  pthread_join(listen_to_elevators, NULL);
+
 
   return 0;
 }
@@ -124,7 +109,6 @@ int main_client(char const *server_ip) {
       printf("No network connection could be established\n");
       printf("Currently Running in single elevator mode\n");
       single_elevator_mode(this_elevator, &server_socket, server_ip);
-	//test_mode(this_elevator);
       this_elevator->is_connected_to_network = 1;
       printf("Network connection established\n");
       printf("Switching to network mode\n");
@@ -133,7 +117,6 @@ int main_client(char const *server_ip) {
     if (this_elevator->is_connected_to_network == 1)
     {
       printf("Elevator is now i network mode");
-      network_elevator_mode(this_elevator, server_socket, server_ip);
       //Hvis får ordre sender til server
       //Mottar ordre
       //Utfører Oppgave
@@ -154,14 +137,13 @@ void *thread_recieve_orders_from_elevators(void *net_status) {
     Network_status *my_net_status = (Network_status *) net_status;
 
     int bytes_received, i;
-    int max_data_size = 32;
+    int max_data_size = sizeof(Elev_info);
     char buf[max_data_size];
-    printf("active connections: %d\n", my_net_status->active_connections);
 
     while(1){
-      for(i = 0; i < (my_net_status->active_connections); i++) {
-        printf("socket number: %d\n", my_net_status->client_sockets[i]);
-        //bytes_received = recv(my_net_status->client_sockets[i], buf, max_data_size, 0);
+      for(i = 0; i = (my_net_status->active_connections -1); i++) {
+        bytes_received = recv(my_net_status->client_sockets[i], buf, max_data_size -1, 0);
+        printf("%c\n", buf);
         memset(&buf, 0, sizeof(buf));
     }
   }
