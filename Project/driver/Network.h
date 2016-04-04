@@ -26,6 +26,8 @@ typedef struct {
 pthread_mutex_t net_stat_lock;
 
 
+
+
 int main_server();
 int main_client(char const *server_ip);
 int initialize_server_socket();
@@ -38,4 +40,4 @@ int update_elevator_status();
 //void Send_message(void *sockfd);
 int sendall(int s, char *buf, int *len);
 void *listen_for_and_maintain_incomming_connections(void* net_status);
-void *thread_recieve_orders_from_elevator(void *net_status);
+void *thread_recieve_orders_from_elevators(void *net_status);

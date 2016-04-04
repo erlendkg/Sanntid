@@ -40,7 +40,6 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
-
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
   this_elevator->desired_floor = 1;
@@ -60,31 +59,14 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
   pthread_join(button_input, NULL);
 }
 
-int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip) {
+int network_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor, send_status_to_server, recieve_orders;
 
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
-
-  this_elevator->desired_floor = 1;
-  elev_go_to_floorFUNCTION(this_elevator);
-  int a;
-  int bytes;
-
-  while(1) {
+  
+  	
 
 
-	printf("Recieving order from master: Which floor?\n");
-	scanf("%d",&a);
-	this_elevator->desired_floor = a;
-
-	elev_go_to_floorFUNCTION(this_elevator);
-
-	printf("SEND MESSAGE TO MASTER\n");
-  bytes = send(server_socket, "Hello Motherfucker", 32, 0);
-  printf("%i ", bytes);
-
-
-}
 }
 
 void *send_status_to_server(void* this_elevator) {
@@ -132,6 +114,7 @@ int run_elevator(Elev_info *this_elevator) {
   return 1;
 }
 
+
 int run_down_until_hit_floor(){
   int currentFloor;
 
@@ -142,7 +125,7 @@ int run_down_until_hit_floor(){
   }
 
   while((currentFloor == -1)) {
-
+	
 	currentFloor = elev_get_floor_sensor_signal();
 
     if((currentFloor != -1)) {
@@ -152,6 +135,7 @@ int run_down_until_hit_floor(){
    }
 
 }
+
 
 void* listen_for_button_input(void *this_elevator) {
 
@@ -236,7 +220,6 @@ void* elev_go_to_floor(void *this_elevator) {
   return NULL;
 }
 
-<<<<<<< HEAD
 int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
   int floorSignal;
 
@@ -296,22 +279,20 @@ int test_mode(Elev_info *this_elevator) {
 	int a;
 
   while(1) {
-
-
-	printf("Which floor?\n");
+		
+	
+	printf("Which floor?\n");	
 	scanf("%d",&a);
 	this_elevator->desired_floor = a;
-
+	
 	elev_go_to_floorFUNCTION(this_elevator);
-
-	printf("SEND MESSAGE TO MASTER\n");
+	
+	printf("success\n");	
 
 	}
 }
 
 
-=======
->>>>>>> 90fabcd55de35ff56e16336051e809a79415b504
 int elev_hold_door_open()
 {
   int floor;
@@ -326,6 +307,7 @@ int elev_hold_door_open()
   elev_set_door_open_lamp(0);
   return 1;
 }
+
 
 //Basic functions below
 void elev_init(void) {

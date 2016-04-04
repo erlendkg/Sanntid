@@ -38,7 +38,7 @@ typedef struct {
 pthread_mutex_t elev_info_lock;
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
-int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip);
+int network_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
 
 int run_elevator(Elev_info *this_elevator);
 int run_down_until_hit_floor();
@@ -52,7 +52,7 @@ void* elev_go_to_floor(void *this_elevator);
 void* listen_for_button_input(void *this_elevator);
 int elev_hold_door_open();
 
-char *get_string(int msgType, Elev_info E);
+char *get_string(int msgType, Elev_info *E);
 int elev_go_to_floorFUNCTION(Elev_info *this_elevator);
 
 void elev_set_motor_direction(elev_motor_direction_t dirn);

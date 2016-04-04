@@ -23,7 +23,7 @@ pthread_mutex_t lock;
 void print_queue(int order_queue[MAX_QUEUE_SIZE]);
 int flush_order_queue(int order_queue[MAX_QUEUE_SIZE], size_t size_of_order_queue);
 void removeItemFromQueue(int order_queue[MAX_QUEUE_SIZE]);
-int insert_item(int order_queue[MAX_QUEUE_SIZE], int pos, int num);
+void insert_item(int order_queue[MAX_QUEUE_SIZE], int pos, int num);
 
 //logic and browsing functions
 int isElevatorDisabled(int status);
