@@ -406,11 +406,12 @@ char *actOnMessageFromMaster(struct Elevator_data E[N_ELEVATORS], char *messageF
       addNewOrderToQueue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, lengthOfElevatorArray);
       pthread_mutex_unlock(&lock);
 
-      return "1";
+      return "2";
     }
     else{
       pthread_mutex_unlock(&lock);
 
+      //HER SKAL VI SENDE SAMME ORDRE PÅ NYTT
       return "0";
     }
 

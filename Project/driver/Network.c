@@ -1,5 +1,6 @@
 #include "Network.h"
 #include "elev.h"
+#include "QueueModule/queue_functions.h"
 
 void *listen_for_and_maintain_incomming_connections(void* net_status)
 {
@@ -12,6 +13,15 @@ void *listen_for_and_maintain_incomming_connections(void* net_status)
   int addrlen = sizeof address;
 
   char buffer[sizeof(Network_status)];
+
+  //QUEUESTUFF1*******************************************************
+  char *returnMessage;
+  char *initialMessage;
+  int lengthOfElevatorArray = 0, queueNumber;
+  struct Elevator_data dataElevators[MAX_NUMBER_OF_ELEVATORS];
+  initiateQueues(dataElevators);
+  //QUEUESTUFF1*******************************************************
+
 
   if(listen(my_net_status->master_socket, MAX_NUMBER_OF_ELEVS) < 0) {
     perror("listen");
@@ -53,6 +63,16 @@ void *listen_for_and_maintain_incomming_connections(void* net_status)
               break;
             }
         }
+        // //QUEUESTUFF2*******************************************************
+        // printf("prøver å sende\n");
+        // queueNumber = assignNumberToNewElevator(dataElevators, lengthOfElevatorArray);
+        // activateSingleQueue(dataElevators, queueNumber);
+        // lengthOfElevatorArray ++;
+        // printf("prøver å sende her er queue number : %d\n", queueNumber);
+        // printf("prøver å sendLALDSALDSe\n");
+        // send(new_socket, queueNumber, 32, 0);
+        //   printf("prøver å sendTT\n");
+        // //QUEUESTUFF2*******************************************************
     }
     for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
       sd = my_net_status->client_sockets[i];
@@ -67,9 +87,17 @@ void *listen_for_and_maintain_incomming_connections(void* net_status)
           my_net_status->client_sockets[i] = 0;
           my_net_status->active_connections -= 1;
         } else {
-          //recv(sd, &buffer, 1024,0);
+          //QUEUESTUFF3*******************************************************
             printf("%s\n",buffer );
+            returnMessage = actOnMessageFromMaster(dataElevators, buffer, lengthOfElevatorArray);
 
+            if (returnMessage == "2") {
+              printf("Order has been added to queue\n");
+            }
+            else {
+              printf("sender ny ordre\n");
+            }
+          //QUEUESTUFF3*******************************************************
         }
         }
       }
@@ -88,23 +116,14 @@ int main_server() {
   pthread_create(&listen_for_clients, NULL, listen_for_and_maintain_incomming_connections, (void *) net_status);
 
 
-  int listening_thread_is_active = 0;
-  // while(1){
-  //   if (net_status->active_connections > 0 && listening_thread_is_active == 0){
-  //
-  //     pthread_create(&listen_to_elevators, NULL, thread_recieve_orders_from_elevators, (void*) net_status);
-  //     listening_thread_is_active = 1;
-  //   }
-  // }
   pthread_join(listen_for_clients, NULL);
-  pthread_join(listen_to_elevators, NULL);
 
   return 0;
 }
 
 int main_client(char const *server_ip) {
 
-  int server_socket;
+  int server_socket, networkModeActive;
   Elev_info *this_elevator = malloc(sizeof(Elev_info));
 
   pthread_mutex_init(&elev_info_lock, NULL);
@@ -132,8 +151,11 @@ int main_client(char const *server_ip) {
 
     if (this_elevator->is_connected_to_network == 1)
     {
-      printf("Elevator is now i network mode");
-      network_elevator_mode(this_elevator, server_socket, server_ip);
+      //printf("Elevator is now i network mode");
+      if (networkModeActive == 0){
+        network_elevator_mode(this_elevator, server_socket, server_ip);
+        networkModeActive = 1;
+      }
       //Hvis får ordre sender til server
       //Mottar ordre
       //Utfører Oppgave
@@ -142,6 +164,8 @@ int main_client(char const *server_ip) {
   }
 
 }
+
+
 
 int wait_for_orders_from_server(int server_socket) {
   return 0;

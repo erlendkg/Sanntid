@@ -62,13 +62,17 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
 
 int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor, send_status_to_server, recieve_orders;
+  int a, bytes;
+  char *message;
 
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
 
-  this_elevator->desired_floor = 1;
+  this_elevator-> = 1;
   elev_go_to_floorFUNCTION(this_elevator);
-  int a;
-  int bytes;
+
+
+
+
 
   while(1) {
 
@@ -79,8 +83,10 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
 
 	elev_go_to_floorFUNCTION(this_elevator);
 
+  sprintf(message, "<1E%dF%d>", this_elevator->num, this_elevator->current_floor);
+
 	printf("SEND MESSAGE TO MASTER\n");
-  bytes = send(server_socket, "Hello Motherfucker", 32, 0);
+  bytes = send(server_socket, message, 32, 0);
   printf("%i ", bytes);
 
 
@@ -236,7 +242,6 @@ void* elev_go_to_floor(void *this_elevator) {
   return NULL;
 }
 
-<<<<<<< HEAD
 int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
   int floorSignal;
 
@@ -310,8 +315,6 @@ int test_mode(Elev_info *this_elevator) {
 }
 
 
-=======
->>>>>>> 90fabcd55de35ff56e16336051e809a79415b504
 int elev_hold_door_open()
 {
   int floor;
