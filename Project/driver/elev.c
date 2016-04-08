@@ -38,7 +38,6 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
 
-
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
   this_elevator->desired_floor = 1;

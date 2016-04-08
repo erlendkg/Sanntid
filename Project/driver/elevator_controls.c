@@ -14,14 +14,26 @@ int go_to_floor(int current_floor, int desired_floor) {
     return 0;
 }
 
-int return_current_floor() {
-  int current_floor;
+int hold_doors_open(int duration) {
+  int floor;
 
-  current_floor = elev_get_floor_sensor_signal();
-  current_floor += 1;
+  if((floor = elev_get_floor_sensor_signal()) == -1) {
+    fprintf(stderr, "Elevator between floors\n");
+    return -1;
+  }
 
-  return current_floor;
+  elev_set_door_open_lamp(1);
+  sleep(duration);
+  elev_set_door_open_lamp(0);
+  return 1;
 }
+
+int initialize_hardware() {
+  elev_init();
+
+
+}
+
 
 int add_order_to_history(int floor, int button_type, Order order_history[MAX_QUEUE_SIZE]) {
   int i;
@@ -50,34 +62,7 @@ int empty_order_history(Order order_history[MAX_QUEUE_SIZE]) {
   return 0;
 }
 
-Order return_button_input() {
-    int floor;
-    Order my_order;
 
-    while(1) {
-      for(floor = 0; floor < N_FLOORS; floor++) {
-        if(elev_get_button_signal(2, floor) == 1) {
-          my_order.floor = (floor +1);
-          my_order.button_type = 2;
-          return my_order;
-        }
-        if(elev_get_button_signal(1,floor) == 1) {
-          my_order.floor = (floor+1);
-          my_order.button_type = 1;
-
-          return my_order;
-        }
-
-       if(elev_get_button_signal(0,floor) == 1) {
-        my_order.floor = (floor+1);
-        my_order.button_type = 0;
-
-        return my_order;
-
-        }
-      }
-    }
-  }
 
 void *thread_monitor_button_inputs(void* order_history[MAX_QUEUE_SIZE]) {
   Order *my_order_history = (Order *) order_history;
