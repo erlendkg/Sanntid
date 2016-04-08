@@ -1,19 +1,24 @@
 #include "basic_network_functions.h"
 #include "basic_elevator_functions.h"
+#include "elev.h"
 
 int main(int argc, char const *argv[]) {
+  if(argc == 1) {
+    printf("Not enough input arguments");
+    exit(1);
+  }
 
-  int* r;
-  int current_floor;
-  initialize_hardware();
+  if(atoi(argv[1]) == 1) {
+    main_server();
+  }
 
-  while(1) {
-    r = return_button_input();
-    current_floor = return_current_floor();
-    printf("type: %d, floor: %d\n", r[0], r[1]);
-    printf("Current floor: %d\n", current_floor);
-    go_to_floor(r[1]);
-    sleep(5);
+  if(atoi(argv[1]) == 2) {
+    if(argc != 3) {
+      printf("Please input server ip adress\n");
+      exit(1);
+    }
+    main_client(argv[2]);
+
   }
 
   return 0;

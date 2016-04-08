@@ -167,8 +167,6 @@ void* elev_go_to_floor(void *this_elevator) {
 
   while(1){
 
-
-
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal  != cast_this_elevator->current_floor) { //INSIDE HERE WE NEED TO SEND A MESSAGE TO MASTER **************************
 
@@ -204,9 +202,6 @@ int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
   int floorSignal;
 
   while(1){
-
-
-
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal  != cast_this_elevator->current_floor) { //INSIDE HERE WE NEED TO SEND A MESSAGE TO MASTER **************************
 

@@ -52,8 +52,7 @@ int read_message_from_client(int client_socket, char* buf) {
 
 }
 
-void *listen_for_incoming_connections(void* net_status)
-{
+void *listen_for_incoming_connections(void* net_status) {
   Network_status *my_net_status = (Network_status *) net_status;
   struct sockaddr_in address;
   int max_sd, sd, activity;

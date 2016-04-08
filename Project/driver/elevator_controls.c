@@ -30,8 +30,6 @@ int hold_doors_open(int duration) {
 
 int initialize_hardware() {
   elev_init();
-
-
 }
 
 

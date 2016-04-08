@@ -105,7 +105,7 @@ int add_all_socks_to_fdlist(fd_set *readfds, Network_status *net_status) {
   return max_sd;
 }
 
-int accept_clinet(Network_status *net_status) {
+int accept_client(Network_status *net_status) {
   int new_socket;
   int i;
   struct sockaddr_in address;
@@ -127,7 +127,7 @@ int accept_clinet(Network_status *net_status) {
     }
 }
 
-int sendall(int recipient_socket, char *buf, int *len) {
+int send_all(int recipient_socket, char *buf, int *len) {
   int total = 0;
   int bytesleft = *len;
   int n;

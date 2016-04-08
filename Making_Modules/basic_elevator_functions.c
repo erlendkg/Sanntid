@@ -9,22 +9,21 @@ int initialize_hardware() {
 int go_to_floor(int desired_floor) {
   int current_floor;
 
-  while(current_floor != desired_floor) {
-    current_floor = return_current_floor();
-
-    if(current_floor != -1) {
+  while(1) {
+    if((current_floor = return_current_floor()) != -1) {
+      if(current_floor < desired_floor){
+        elev_set_motor_direction(DIRN_UP);
+      }
       if(current_floor > desired_floor) {
         elev_set_motor_direction(DIRN_DOWN);
       }
-      if (current_floor < desired_floor) {
-        elev_set_motor_direction(DIRN_UP);
-      }
-      if (current_floor == desired_floor) {
+      if(current_floor == desired_floor) {
+
         elev_set_motor_direction(DIRN_STOP);
+        return 1;
       }
     }
   }
-    return 0;
 }
 
 int hold_doors_open(int duration) {
@@ -43,33 +42,30 @@ int hold_doors_open(int duration) {
 
 int return_current_floor() {
   int current_floor;
-
   current_floor = elev_get_floor_sensor_signal();
-  current_floor += 1;
-
   return current_floor;
 }
 
-int* return_button_input() {
+int return_button_input(Button_click *button_order) {
     int floor;
     int input[2];
 
     while(1) {
       for(floor = 0; floor < N_FLOORS; floor++) {
         if(elev_get_button_signal(2, floor) == 1) {
-          input[0] = 2;
-          input[1] = (floor +1);
-          return input;
+          button_order->button_type = 2;
+          button_order->button_floor = (floor +1);
+          return 0;
         }
         if(elev_get_button_signal(1,floor) == 1) {
-          input[0] = 1;
-          input[1] = (floor +1);
-          return input;
+          button_order->button_type= 1;
+          button_order->button_floor = (floor +1);
+          return 0;
         }
        if(elev_get_button_signal(0,floor) == 1) {
-         input[0] = 0;
-         input[1] = (floor +1);
-         return input;
+         button_order->button_type = 0;
+         button_order->button_floor = (floor +1);
+         return 0;
       }
     }
   }

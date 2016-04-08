@@ -1,10 +1,10 @@
 #include "basic_network_functions.h"
 #include "basic_elevator_functions.h"
-#include "elev.h"
+#include <pthread.h>
 
 typedef struct {
   int num;
-  int desired_floor;
+  int desired_floor[10];
   int current_floor;
   int is_busy;
   int button_click;
@@ -14,7 +14,7 @@ typedef struct {
   int server_socket;
 } Elev_info;
 
-pthread_mutex_t elev_info_lock;
+
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
 int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip);
@@ -23,3 +23,6 @@ int main_client(char const *server_ip);
 
 void* thread_listen_for_button_input(void *this_elevator);
 void* thread_carry_out_orders(void *this_elevator);
+void* thread_main_server(void *net_status);
+void* thread_main_client(void *this_elevator);
+int listen_for_message_from_master(char* buffer, int master_socket, int buffer_size);
