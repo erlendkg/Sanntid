@@ -25,4 +25,3 @@ void* thread_listen_for_button_input(void *this_elevator);
 void* thread_carry_out_orders(void *this_elevator);
 void* thread_main_server(void *net_status);
 void* thread_main_client(void *this_elevator);
-int listen_for_message_from_master(char* buffer, int master_socket, int buffer_size);

@@ -110,33 +110,6 @@ int main_client(char const *server_ip) {
 
   }
 
-int listen_for_message_from_master(char *buffer, int master_socket, int buffer_size) {
-
-  int valread;
-  int max_sd;
-  int activity;
-  fd_set serverfd;
-
-  while(1) {
-    FD_ZERO(&serverfd);
-
-    FD_SET(master_socket, &serverfd);
-    max_sd = master_socket;
-    activity = select(max_sd + 1, &serverfd, NULL, NULL, NULL);
-
-    if(FD_ISSET(master_socket, &serverfd))
-    {
-      valread = read(master_socket, buffer, buffer_size);
-      if(valread == 0) {
-        printf("Lost Server\n");
-        return -1;
-      } else {
-        return 1;
-      }
-    }
-  }
-}
-
 void* thread_main_client(void *this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
   int buffer_size = sizeof(Elev_info);
@@ -151,7 +124,6 @@ void* thread_main_client(void *this_elevator) {
     }
   }
 }
-
 
 void* thread_main_server(void *net_status) {
 

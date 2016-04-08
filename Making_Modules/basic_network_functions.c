@@ -145,6 +145,29 @@ int send_all(int recipient_socket, char *buf, int *len) {
   return n==-1?-1:0;
 }
 
-char* recieve_message(int senders_socket) {
+int listen_for_message_from_master(char *buffer, int master_socket, int buffer_size) {
 
+  int valread;
+  int max_sd;
+  int activity;
+  fd_set serverfd;
+
+  while(1) {
+    FD_ZERO(&serverfd);
+
+    FD_SET(master_socket, &serverfd);
+    max_sd = master_socket;
+    activity = select(max_sd + 1, &serverfd, NULL, NULL, NULL);
+
+    if(FD_ISSET(master_socket, &serverfd))
+    {
+      valread = read(master_socket, buffer, buffer_size);
+      if(valread == 0) {
+        printf("Lost Server\n");
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+  }
 }
