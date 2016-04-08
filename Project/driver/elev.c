@@ -2,8 +2,8 @@
 #include "channels.h"
 #include "io.h"
 #include "modules/error_and_logging.h"
-#include "queue_functions.h"
 #include "Network.h"
+#include "queue_functions.h"
 
 
 #include <assert.h>
@@ -53,6 +53,7 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
     if((*server_socket = initialize_client_socket(server_ip)) != 2) {
       pthread_cancel(button_input);
       pthread_cancel(go_to_floor);
+
       return 0;
     }
   }
@@ -61,39 +62,49 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
 }
 
 int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip) {
-  pthread_t button_input, go_to_floor, send_status_to_server, recieve_orders;
-  int a, bytes;
-  char *message;
+  pthread_t button_input;
+  int a, bytes,b;
+  char message[512];
+  char incomingMessage[512];
+  printf("hello");
+
+  this_elevator->server_socket = server_socket;//Dette kan vi gjøre bedre
 
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
 
-  this_elevator-> = 1;
+  memset(incomingMessage, 0, sizeof(incomingMessage));
+  recv(server_socket, &incomingMessage, sizeof(incomingMessage), 0);
+  this_elevator->num = atoi(incomingMessage);
+  printf("This elevator is number %d\n", this_elevator->num);
+  this_elevator->desired_floor = 1;
   elev_go_to_floorFUNCTION(this_elevator);
-
-
-
 
 
   while(1) {
 
+    memset(incomingMessage, 0, sizeof(incomingMessage));
 
-	printf("Recieving order from master: Which floor?\n");
-	scanf("%d",&a);
-	this_elevator->desired_floor = a;
+  	printf("Waiting for order from master?\n");
+  	// scanf("%d",&a);
+  	// this_elevator->desired_floor = a;
+    ssize_t n = recv(server_socket, incomingMessage, sizeof(incomingMessage), 0);
+      printf("Recieved msg: %s\n", incomingMessage);
+      sscanf(incomingMessage, "<1E%dF%d>", &b, &this_elevator->desired_floor);
 
-	elev_go_to_floorFUNCTION(this_elevator);
+    	elev_go_to_floorFUNCTION(this_elevator);
+      printf("rett før\n");
 
-  sprintf(message, "<1E%dF%d>", this_elevator->num, this_elevator->current_floor);
+      sprintf(message, "<1E%dF%d>", this_elevator->num, this_elevator->current_floor);
 
-	printf("SEND MESSAGE TO MASTER\n");
-  bytes = send(server_socket, message, 32, 0);
-  printf("%i ", bytes);
+    	printf("SEND MESSAGE TO MASTER\n");
+      bytes = send(server_socket, message, sizeof(message), 0);
 
+  }
 
+  return 0;
 }
-}
 
-void *send_status_to_server(void* this_elevator) {
+void* send_status_to_server(void* this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
   char message[sizeof(Elev_info)];
   int length = sizeof(Elev_info);
@@ -102,40 +113,8 @@ void *send_status_to_server(void* this_elevator) {
   sprintf(message, "%d%d", my_this_elevator->current_floor, my_this_elevator->desired_floor);
   sendall(my_this_elevator->server_socket, message, &length);
   }
-}
 
-int run_elevator(Elev_info *this_elevator) {
-
-  pthread_t button_input, go_to_floor;
-  int order_queue[MAX_QUEUE_SIZE];
-  size_t size_of_queue = sizeof order_queue;
-  int s;
-  int len;
-  char buf[100];
-  char ip_addr[32] = "78.91.2.218";
-
-
-  elev_set_motor_direction(DIRN_STOP);
-  elev_init();
-  run_down_until_hit_floor();
-  elev_set_motor_direction(DIRN_STOP);
-
-  pthread_create(&button_input, NULL, listen_for_button_input, NULL);
-  pthread_create(&go_to_floor, NULL, elev_go_to_floor, NULL);
-
-
- while(1) {
-    sprintf(buf, "<1E%dF%d>", this_elevator->current_floor, this_elevator->desired_floor);
-    len = strlen(buf);
-    sendall(s, buf, &len);
-    sleep(2);
-  }
-
-
-  pthread_join(go_to_floor, NULL);
-  pthread_join(button_input, NULL);
-
-  return 1;
+  return NULL;
 }
 
 int run_down_until_hit_floor(){
@@ -163,6 +142,7 @@ void* listen_for_button_input(void *this_elevator) {
 
   int floor;
   Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
+  char messageToMaster[512];
 
   while(1) {
 
@@ -176,7 +156,13 @@ void* listen_for_button_input(void *this_elevator) {
           cast_this_elevator->is_busy = 1;
           cast_this_elevator->desired_floor = (floor +1);
           pthread_mutex_unlock(&elev_info_lock);
+
+          sprintf(messageToMaster, "<2E%dBT2F%d>", cast_this_elevator->num, cast_this_elevator->current_floor);
+        	printf("SEND buttonmessage TO MASTER\n");
+          send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+
       }
+
       if (elev_get_button_signal(1, floor) == 1){
           pthread_mutex_lock(&elev_info_lock);
           //printf("Floor %d, Down\n", (floor+1));
@@ -296,7 +282,6 @@ char *msg = (char*) malloc(10 * sizeof(int));
 }
 
 int test_mode(Elev_info *this_elevator) {
-  pthread_t button_input, go_to_floor;
   this_elevator->desired_floor = 1;
 	int a;
 
@@ -312,6 +297,8 @@ int test_mode(Elev_info *this_elevator) {
 	printf("SEND MESSAGE TO MASTER\n");
 
 	}
+
+  return 0;
 }
 
 

@@ -47,7 +47,7 @@ int isElevatorDisabled(int status){
     else {return 0;}
 }
 
-void disableElevatorAndDistributeQueueToOtherElevators(struct Elevator_data E[N_ELEVATORS], int crashedElev, int lengthOfElevatorArray){
+void disableElevatorAndDistributeQueueToOtherElevators( Elevator_data E[N_ELEVATORS], int crashedElev, int lengthOfElevatorArray){
 
   pthread_mutex_lock(&lock);
 
@@ -65,7 +65,7 @@ void disableElevatorAndDistributeQueueToOtherElevators(struct Elevator_data E[N_
 }
 
 
-void activateSingleQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber){
+void activateSingleQueue( Elevator_data E[N_ELEVATORS], int elevatorNumber){
 
   size_t l = MAX_QUEUE_SIZE * sizeof (E[elevatorNumber].queue[0]);
   flush_order_queue(E[elevatorNumber].queue,l);
@@ -77,7 +77,7 @@ void activateSingleQueue(struct Elevator_data E[N_ELEVATORS], int elevatorNumber
 
 }
 
-int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators){
+int assignNumberToNewElevator( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators){
 
   int i;
 
@@ -90,7 +90,7 @@ int assignNumberToNewElevator(struct Elevator_data E[MAX_NUMBER_OF_ELEVATORS], i
 }
 
 
-void initiateQueues(struct Elevator_data E[N_ELEVATORS]){
+void initiateQueues( Elevator_data E[N_ELEVATORS]){
 
       for(int i = 0; i < N_ELEVATORS; i++){
         size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
@@ -214,7 +214,7 @@ void place_order_not_on_the_way(int order_queue[MAX_QUEUE_SIZE], int * status, i
 
 
 
-void place_bt2_order(struct Elevator_data * E, int button_order){
+void place_bt2_order( Elevator_data * E, int button_order){
 
   bool on_way;
 
@@ -233,7 +233,7 @@ void place_bt2_order(struct Elevator_data * E, int button_order){
     }
 }
 
-void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order, int lengthOfElevatorArray){
+void place_bt0_order( Elevator_data E[N_ELEVATORS-1], int button_order, int lengthOfElevatorArray){
 
   int closest_elev = -1;
   int closeness = 9999;
@@ -280,7 +280,7 @@ void place_bt0_order(struct Elevator_data E[N_ELEVATORS-1], int button_order, in
 
 }
 
-void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order, int lengthOfElevatorArray){
+void place_bt1_order( Elevator_data E[N_ELEVATORS-1], int button_order, int lengthOfElevatorArray){
 
   int closest_elev = -1;
   int closeness = 9999;
@@ -323,7 +323,7 @@ void place_bt1_order(struct Elevator_data E[N_ELEVATORS-1], int button_order, in
 }
 
 
-void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator, int lengthOfElevatorArray){
+void addNewOrderToQueue( Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator, int lengthOfElevatorArray){
 
   if (buttonType == 0) {
 
@@ -342,7 +342,7 @@ void addNewOrderToQueue(struct Elevator_data E[N_ELEVATORS], int desired_floor, 
   }
 }
 
-int isElevatorOnCorrectFloor(struct Elevator_data * E, int MsgFloor){
+int isElevatorOnCorrectFloor( Elevator_data * E, int MsgFloor){
 
   E->currentFloor = MsgFloor;
 
@@ -380,17 +380,14 @@ void unpackMessageToVariables(char *str, int *msgType, int *elevatorNumber, int 
   *elevatorFloor = tempMsgFloor;
 }
 
-char *actOnMessageFromMaster(struct Elevator_data E[N_ELEVATORS], char *messageFromElevator, int lengthOfElevatorArray){
+char *actOnMessageFromMaster(Elevator_data E[N_ELEVATORS], char *messageFromElevator, int lengthOfElevatorArray){
 
   int msgType, msgElevatorNumber, msgButtonType, msgElevatorFloor;
 
   unpackMessageToVariables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor);
-
-  printf("MsgType %i\nElevator %i\nFloor %i\nButton type: %i\n\n",msgType, msgElevatorNumber, msgElevatorFloor, msgButtonType);
-
   pthread_mutex_lock(&lock);
 
-  if (msgType == 1 && isElevatorOnCorrectFloor(&E[msgElevatorNumber], msgElevatorFloor)){
+  if (msgType == 1 && isElevatorOnCorrectFloor(&E[msgElevatorNumber], msgElevatorFloor)  && E[msgElevatorNumber].queue[0] != 0){
 
       char *newMessage = (char*) malloc(16 * sizeof(int));
 

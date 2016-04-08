@@ -1,3 +1,8 @@
+#ifndef ELEV_H_DEF
+#define ELEV_H_DEF
+
+
+
 #include <pthread.h>
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
@@ -66,3 +71,5 @@ int elev_get_button_signal(elev_button_type_t button, int floor);
 int elev_get_floor_sensor_signal(void);
 int elev_get_stop_signal(void);
 int elev_get_obstruction_signal(void);
+
+#endif

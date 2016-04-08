@@ -177,7 +177,7 @@
 //     }
 // }
 
-void bt01Test_queues_initiate(struct Elevator_data E[N_ELEVATORS]){
+void bt01Test_queues_initiate( Elevator_data E[N_ELEVATORS]){
 
   for(int i = 0; i < N_ELEVATORS; i++){
     size_t l = MAX_QUEUE_SIZE * sizeof (E[i].queue[0]);
