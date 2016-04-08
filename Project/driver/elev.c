@@ -21,9 +21,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-
 #define MOTOR_SPEED 2800
-
 
 static const int lamp_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
@@ -67,12 +65,7 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
 
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
 
-  this_elevator-> = 1;
   elev_go_to_floorFUNCTION(this_elevator);
-
-
-
-
 
   while(1) {
 
@@ -90,7 +83,7 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
   printf("%i ", bytes);
 
 
-}
+  }
 }
 
 void *send_status_to_server(void* this_elevator) {
@@ -102,40 +95,6 @@ void *send_status_to_server(void* this_elevator) {
   sprintf(message, "%d%d", my_this_elevator->current_floor, my_this_elevator->desired_floor);
   sendall(my_this_elevator->server_socket, message, &length);
   }
-}
-
-int run_elevator(Elev_info *this_elevator) {
-
-  pthread_t button_input, go_to_floor;
-  int order_queue[MAX_QUEUE_SIZE];
-  size_t size_of_queue = sizeof order_queue;
-  int s;
-  int len;
-  char buf[100];
-  char ip_addr[32] = "78.91.2.218";
-
-
-  elev_set_motor_direction(DIRN_STOP);
-  elev_init();
-  run_down_until_hit_floor();
-  elev_set_motor_direction(DIRN_STOP);
-
-  pthread_create(&button_input, NULL, listen_for_button_input, NULL);
-  pthread_create(&go_to_floor, NULL, elev_go_to_floor, NULL);
-
-
- while(1) {
-    sprintf(buf, "<1E%dF%d>", this_elevator->current_floor, this_elevator->desired_floor);
-    len = strlen(buf);
-    sendall(s, buf, &len);
-    sleep(2);
-  }
-
-
-  pthread_join(go_to_floor, NULL);
-  pthread_join(button_input, NULL);
-
-  return 1;
 }
 
 int run_down_until_hit_floor(){
@@ -279,7 +238,7 @@ int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
 
 }
 
-char *get_string(int msgType, Elev_info E) {
+char* get_string(int msgType, Elev_info E) {
 
 char *msg = (char*) malloc(10 * sizeof(int));
 
@@ -314,9 +273,7 @@ int test_mode(Elev_info *this_elevator) {
 	}
 }
 
-
-int elev_hold_door_open()
-{
+int elev_hold_door_open() {
   int floor;
 
   if((floor = elev_get_floor_sensor_signal()) == -1) {
@@ -346,7 +303,6 @@ void elev_init(void) {
     elev_set_floor_indicator(0);
 }
 
-
 void elev_set_motor_direction(elev_motor_direction_t dirn) {
     if (dirn == 0){
         io_write_analog(MOTOR, 0);
@@ -372,7 +328,6 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
     }
 }
 
-
 void elev_set_floor_indicator(int floor) {
     //assert(floor >= 0);
     //assert(floor < N_FLOORS);
@@ -391,7 +346,6 @@ void elev_set_floor_indicator(int floor) {
     }
 }
 
-
 void elev_set_door_open_lamp(int value) {
     if (value) {
         io_set_bit(LIGHT_DOOR_OPEN);
@@ -400,7 +354,6 @@ void elev_set_door_open_lamp(int value) {
     }
 }
 
-
 void elev_set_stop_lamp(int value) {
     if (value) {
         io_set_bit(LIGHT_STOP);
@@ -408,8 +361,6 @@ void elev_set_stop_lamp(int value) {
         io_clear_bit(LIGHT_STOP);
     }
 }
-
-
 
 int elev_get_button_signal(elev_button_type_t button, int floor) {
     assert(floor >= 0);
@@ -425,7 +376,6 @@ int elev_get_button_signal(elev_button_type_t button, int floor) {
     }
 }
 
-
 int elev_get_floor_sensor_signal(void) {
     if (io_read_bit(SENSOR_FLOOR1)) {
         return 1;
@@ -440,11 +390,9 @@ int elev_get_floor_sensor_signal(void) {
     }
 }
 
-
 int elev_get_stop_signal(void) {
     return io_read_bit(STOP);
 }
-
 
 int elev_get_obstruction_signal(void) {
     return io_read_bit(OBSTRUCTION);

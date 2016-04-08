@@ -34,7 +34,7 @@ int initialize_client_socket(char const *server_ip);
 int add_all_socks_to_fdlist(fd_set *readfds, Network_status *net_status);
 
 int accept_clinet(Network_status *net_status);
-int read_message_from_client(Network_status *net_status);
+int read_message_from_client(int client_sockets, char* buf);
 
 
 

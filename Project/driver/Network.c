@@ -48,7 +48,7 @@ int accept_clinet(Network_status *net_status) {
     }
 }
 
-int read_message_from_client(Network_status *net_status) {
+int read_message_from_client(int client_socket, char* buf) {
 
 }
 
@@ -125,7 +125,7 @@ void *listen_for_incoming_connections(void* net_status)
               printf("sender ny ordre\n");
             }
           //QUEUESTUFF3*******************************************************
-        }
+          }
         }
       }
     }
