@@ -79,7 +79,6 @@ Order return_button_input() {
     }
   }
 
-
 void *thread_monitor_button_inputs(void* order_history[MAX_QUEUE_SIZE]) {
   Order *my_order_history = (Order *) order_history;
   Order incoming_order;

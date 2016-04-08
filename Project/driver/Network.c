@@ -2,13 +2,63 @@
 #include "elev.h"
 #include "QueueModule/queue_functions.h"
 
-void *listen_for_and_maintain_incomming_connections(void* net_status)
+int add_all_socks_to_fdlist(fd_set *readfds, Network_status *net_status) {
+
+  int i;
+  int max_sd, sd;
+
+  FD_ZERO(readfds);
+
+  FD_SET(net_status->master_socket, readfds);
+  max_sd = net_status->master_socket;
+
+  for (i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+    sd = net_status->client_sockets[i];
+
+    if(sd > 0) {
+      FD_SET(sd, readfds);
+    }
+    if(sd > max_sd) {
+      max_sd = sd;
+    }
+  }
+
+  return max_sd;
+}
+
+int accept_clinet(Network_status *net_status) {
+  int new_socket;
+  int i;
+  struct sockaddr_in address;
+  int addrlen = sizeof address;
+
+  if((new_socket = accept(net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
+    perror("accept");
+    return -1;
+  }
+  printf("New elevator connected, socket fd is %d, ip is: %s, port %d\n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+
+  for (i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+    if( net_status->client_sockets[i] == 0 ) {
+          net_status->client_sockets[i] = new_socket;
+          net_status->active_connections += 1;
+          printf("Adding to list of sockets as %d\n" , i);
+          break;
+        }
+    }
+}
+
+int read_message_from_client(Network_status *net_status) {
+
+}
+
+void *listen_for_incoming_connections(void* net_status)
 {
   Network_status *my_net_status = (Network_status *) net_status;
   struct sockaddr_in address;
-  int max_sd, sd, i, activity;
+  int max_sd, sd, activity;
   int new_socket;
-  int valread;
+  int valread, i;
   fd_set readfds;
   int addrlen = sizeof address;
 
@@ -23,46 +73,23 @@ void *listen_for_and_maintain_incomming_connections(void* net_status)
   //QUEUESTUFF1*******************************************************
 
 
+
   if(listen(my_net_status->master_socket, MAX_NUMBER_OF_ELEVS) < 0) {
     perror("listen");
     exit(1);
   }
 
   while(1) {
-    FD_ZERO(&readfds);
 
-    FD_SET(my_net_status->master_socket, &readfds);
-    max_sd = my_net_status->master_socket;
-
-    for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
-      sd = my_net_status->client_sockets[i];
-
-      if(sd > 0) {
-        FD_SET(sd, &readfds);
-      }
-
-      if( sd > max_sd) {
-        max_sd = sd;
-      }
-    }
+    max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
 
     activity = select(max_sd +1, &readfds, NULL, NULL, NULL);
 
     if(FD_ISSET(my_net_status->master_socket, &readfds)) {
-      if((new_socket = accept(my_net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
-        perror("accept");
-        break;
-      }
-      printf("New elevator connected, socket fd is %d, ip is : %s, port %d\n", new_socket, inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
 
-      for (i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
-        if( my_net_status->client_sockets[i] == 0 ) {
-              my_net_status->client_sockets[i] = new_socket;
-              my_net_status->active_connections += 1;
-              printf("Adding to list of sockets as %d\n" , i);
-              break;
-            }
-        }
+      if (accept_clinet(my_net_status) == -1) {
+        printf("Failed to accept client\n");
+      }
         // //QUEUESTUFF2*******************************************************
         // printf("prøver å sende\n");
         // queueNumber = assignNumberToNewElevator(dataElevators, lengthOfElevatorArray);
@@ -113,7 +140,7 @@ int main_server() {
   net_status->master_socket = initialize_server_socket();
   pthread_mutex_init(&net_stat_lock, NULL);
 
-  pthread_create(&listen_for_clients, NULL, listen_for_and_maintain_incomming_connections, (void *) net_status);
+  pthread_create(&listen_for_clients, NULL, listen_for_incoming_connections, (void *) net_status);
 
 
   pthread_join(listen_for_clients, NULL);
@@ -165,14 +192,10 @@ int main_client(char const *server_ip) {
 
 }
 
-
-
 int wait_for_orders_from_server(int server_socket) {
   return 0;
 
 }
-
-
 
 void *thread_recieve_orders_from_elevators(void *net_status) {
     Network_status *my_net_status = (Network_status *) net_status;
@@ -196,7 +219,6 @@ void *thread_recieve_orders_from_elevators(void *net_status) {
 int update_elevator_status() {
   return 1;
 }
-
 
 int initialize_client_socket(char const* server_ip) {
 
@@ -240,7 +262,6 @@ int initialize_client_socket(char const* server_ip) {
       freeaddrinfo(servinfo);
       return sockfd;
   }
-
 
 int initialize_server_socket() {
 

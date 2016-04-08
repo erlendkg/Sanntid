@@ -26,18 +26,26 @@ typedef struct {
 pthread_mutex_t net_stat_lock;
 
 
-
-
 int main_server();
 int main_client(char const *server_ip);
+
 int initialize_server_socket();
 int initialize_client_socket(char const *server_ip);
+int add_all_socks_to_fdlist(fd_set *readfds, Network_status *net_status);
+
+int accept_clinet(Network_status *net_status);
+int read_message_from_client(Network_status *net_status);
+
+
+
 int wait_for_orders_from_server(int server_socket);
 int update_elevator_status();
 
 //void* listen_for_orders(void *sockfd);
 //char *get_string(int msgType);
 //void Send_message(void *sockfd);
+
+
 int sendall(int s, char *buf, int *len);
-void *listen_for_and_maintain_incomming_connections(void* net_status);
+void *listen_for_incoming_connections(void* net_status);
 void *thread_recieve_orders_from_elevators(void *net_status);
