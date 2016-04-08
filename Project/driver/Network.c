@@ -31,7 +31,6 @@ int accept_client(Network_status *net_status, Elevator_data dataElevators[MAX_NU
   int i;
   struct sockaddr_in address;
   int addrlen = sizeof address;
-  char *initialMessage;
   int queueNumber;
 
   if((new_socket = accept(net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
@@ -53,15 +52,8 @@ int accept_client(Network_status *net_status, Elevator_data dataElevators[MAX_NU
     queueNumber = assignNumberToNewElevator(dataElevators, dataElevators[99].lengthOfElevatorArray);
     activateSingleQueue(dataElevators, queueNumber);
     dataElevators[99].lengthOfElevatorArray ++;
-    printf("prøver å sende queue number : %d\n", queueNumber);
+    dataElevators[queueNumber].socket = new_socket;
     send(new_socket, &queueNumber, sizeof(queueNumber), 0);
-    printf("Sendt\n");
-
-    for(int i = 0; i < dataElevators[99].lengthOfElevatorArray; i++){
-      printf("Tis is Queue %d\n", i);
-      printf("Status is %d\n", dataElevators[i].status);
-      print_queue(dataElevators[i].queue);
-    }
 
     //QUEUESTUFF2*******************************************************
 }
@@ -71,15 +63,15 @@ void* listen_for_incoming_connections(void* net_status) {
   Network_status *my_net_status = (Network_status *) net_status;
   struct sockaddr_in address;
   int max_sd, sd, i, activity;
-  int new_socket;
   int valread;
   fd_set readfds;
   int addrlen = sizeof address;
 
-  char buffer[sizeof(Network_status)];
+  char buffer[512];
 
   //QUEUESTUFF1*******************************************************
-  char *returnMessage;
+  char returnMessage[512];
+  char *temp;
   Elevator_data dataElevators[MAX_NUMBER_OF_ELEVATORS];
   initiateQueues(dataElevators);
 
@@ -95,6 +87,9 @@ void* listen_for_incoming_connections(void* net_status) {
   }
 
   while(1) {
+
+
+
     max_sd = add_all_socks_to_fdlist(&readfds, net_status);
 
     activity = select(max_sd +1, &readfds, NULL, NULL, NULL);
@@ -107,7 +102,7 @@ void* listen_for_incoming_connections(void* net_status) {
       sd = my_net_status->client_sockets[i];
 
       if(FD_ISSET(sd, &readfds)) {
-        if((valread = read(sd, &buffer, 1024)) == 0) {
+        if((valread = read(sd, &buffer, sizeof(buffer))) == 0) {
           getpeername(sd , (struct sockaddr*)&address , (socklen_t*)&addrlen);
           printf("Client disconnected , ip %s , port %d \n" , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
 
@@ -117,20 +112,44 @@ void* listen_for_incoming_connections(void* net_status) {
           my_net_status->active_connections -= 1;
         } else {
           //QUEUESTUFF3*******************************************************
-            printf("meldingen er %s\n",buffer );
-            returnMessage = actOnMessageFromMaster(dataElevators, buffer, dataElevators[99].lengthOfElevatorArray);
+            printf("\n\nMottatt meldingen %s på socket %d\n",buffer, sd );
 
-            if (strcmp(returnMessage, "2") != 0) {
+            temp = actOnMessageFromMaster(dataElevators, buffer, dataElevators[99].lengthOfElevatorArray);
+
+            strcpy(returnMessage, temp);
+
+              printf("Returnmessage = %s\n", returnMessage);
+
+
+
+            if (strcmp(returnMessage, "2") == 0) {
+
               printf("Order has been added to queue\n");
+
             }
-            else if (strcmp(returnMessage, "0") != 0){
-            //send samme melding igjen
-            printf("sender ny ordre %s\n", returnMessage);
+            else if (strcmp(returnMessage, "0") == 0){
+
+              printf("Den var null gitt\n");
+
             }
-            else {
+            else if (strchr(returnMessage, '<') != 0){
+
               printf("her sender jeg: %s \n", returnMessage);
-              send(sd, &returnMessage, sizeof(returnMessage), 0);
+              send(sd, returnMessage, sizeof(returnMessage), 0); //HER SKJER EN SEG FAULT
             }
+
+            printf("lengthOfElevArray: %d", dataElevators[99].lengthOfElevatorArray);
+
+            for(int i = 0; i < dataElevators[99].lengthOfElevatorArray; i++){
+              printf("\n\nTis is Queue %d\n", i);
+              printf("Status is %d\n", dataElevators[i].status);
+              print_queue(dataElevators[i].queue);
+            }
+
+
+            memset(buffer, 0, sizeof(buffer));
+            memset(returnMessage, 0, sizeof(returnMessage));
+
           //QUEUESTUFF3*******************************************************
         }
         }
@@ -197,15 +216,11 @@ int main_client(char const *server_ip) {
 
 
 
-int wait_for_orders_from_server(int server_socket) {
-  return 0;
-
-}
 
 void* thread_sendOrdersToIdleElevators(void *elevatorInfo){
     printf("Entering send to elevators thread\n");
   Elevator_data *myElevatorInfo = (Elevator_data *)elevatorInfo;
-  char *messageToElevator;
+  char messageToElevator[512];
   int i;
 
   while(1){
@@ -213,10 +228,16 @@ void* thread_sendOrdersToIdleElevators(void *elevatorInfo){
     for( i = 0; i <= myElevatorInfo[99].lengthOfElevatorArray; i++ ){
 
       if (myElevatorInfo[i].status == 2 && myElevatorInfo[i].queue[0] != 0){
-        printf("Sending msg to elev %d: %s\n",i,messageToElevator);
-        sscanf(messageToElevator, "<1E%dF%d>", &i, &myElevatorInfo[i].queue[0]);
-        send(myElevatorInfo[i].socket, &messageToElevator, 1024, 0);
-        printf("msg sent to elev %d: %s\n",i,messageToElevator);
+
+        printf("First pos in queue is: %d: \n", myElevatorInfo[i].queue[0]);
+
+        sprintf(messageToElevator, "<1E%dF%d>", i, myElevatorInfo[i].queue[0]);
+
+        printf("Sending msg to elev %d: %s, on socket %d\n", i, messageToElevator, myElevatorInfo[i].socket);
+
+        send(myElevatorInfo[i].socket, messageToElevator, sizeof(messageToElevator), 0);
+
+        updateElevatorStruct(myElevatorInfo[i].queue, &myElevatorInfo[i].status, &myElevatorInfo[i].queueSize, myElevatorInfo[i].currentFloor);
 
       }
     }
@@ -225,29 +246,8 @@ void* thread_sendOrdersToIdleElevators(void *elevatorInfo){
   return NULL;
 }
 
-void *thread_recieve_orders_from_elevators(void *net_status) {
-
-    Network_status *my_net_status = (Network_status *) net_status;
-
-    int bytes_received, i;
-    int max_data_size = 32;
-    char buf[max_data_size];
-    printf("active connections: %d\n", my_net_status->active_connections);
-
-    while(1){
-      for(i = 0; i < (my_net_status->active_connections); i++) {
-        printf("socket number: %d\n", my_net_status->client_sockets[i]);
-        //bytes_received = recv(my_net_status->client_sockets[i], buf, max_data_size, 0);
-        memset(&buf, 0, sizeof(buf));
-    }
-  }
 
 
-}
-
-int update_elevator_status() {
-  return 1;
-}
 
 
 int initialize_client_socket(char const* server_ip) {

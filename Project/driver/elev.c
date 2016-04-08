@@ -63,7 +63,7 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
 
 int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip) {
   pthread_t button_input;
-  int a, bytes,b;
+  int bytes,b;
   char message[512];
   char incomingMessage[512];
   printf("hello");
@@ -83,20 +83,20 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
   while(1) {
 
     memset(incomingMessage, 0, sizeof(incomingMessage));
+    memset(message, 0, sizeof(message));
 
   	printf("Waiting for order from master?\n");
-  	// scanf("%d",&a);
-  	// this_elevator->desired_floor = a;
-    ssize_t n = recv(server_socket, incomingMessage, sizeof(incomingMessage), 0);
+
+    recv(server_socket, incomingMessage, sizeof(incomingMessage), 0);
+
       printf("Recieved msg: %s\n", incomingMessage);
       sscanf(incomingMessage, "<1E%dF%d>", &b, &this_elevator->desired_floor);
 
     	elev_go_to_floorFUNCTION(this_elevator);
-      printf("rett før\n");
 
       sprintf(message, "<1E%dF%d>", this_elevator->num, this_elevator->current_floor);
 
-    	printf("SEND MESSAGE TO MASTER\n");
+    	printf("SENDING MESSAGE TO MASTER\n");
       bytes = send(server_socket, message, sizeof(message), 0);
 
   }
@@ -126,16 +126,16 @@ int run_down_until_hit_floor(){
     elev_set_motor_direction(DIRN_DOWN);
   }
 
-  while((currentFloor == -1)) {
+  while(currentFloor == -1) {
 
 	currentFloor = elev_get_floor_sensor_signal();
 
-    if((currentFloor != -1)) {
+    if(currentFloor != -1) {
          elev_set_motor_direction(DIRN_STOP);
         return 1;
     }
    }
-
+   return 0;
 }
 
 void* listen_for_button_input(void *this_elevator) {
@@ -143,23 +143,38 @@ void* listen_for_button_input(void *this_elevator) {
   int floor;
   Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
   char messageToMaster[512];
+  clock_t start_t0 ,start_t1, start_t2, stop_t0, stop_t1, stop_t2;
+  double dt;
+  int sendingFlag;
+
+  start_t0 = clock();
+  start_t1 = clock();
+  start_t2 = clock();
+
 
   while(1) {
-
+    memset(messageToMaster, 0, sizeof(messageToMaster));
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
           pthread_mutex_lock(&elev_info_lock);
-          //printf("Floor %d, Inside\n", (floor+1));
-          cast_this_elevator->button_floor = (floor +1);
-          cast_this_elevator->button_type = 2;
-          cast_this_elevator->button_click = 1;
-          cast_this_elevator->is_busy = 1;
-          cast_this_elevator->desired_floor = (floor +1);
+          // //printf("Floor %d, Inside\n", (floor+1));
+          // cast_this_elevator->button_floor = (floor +1);
+          // cast_this_elevator->button_type = 2;
+          // cast_this_elevator->button_click = 1;
+          // cast_this_elevator->is_busy = 1;
+          // cast_this_elevator->desired_floor = (floor +1);
           pthread_mutex_unlock(&elev_info_lock);
 
-          sprintf(messageToMaster, "<2E%dBT2F%d>", cast_this_elevator->num, cast_this_elevator->current_floor);
-        	printf("SEND buttonmessage TO MASTER\n");
-          send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+          stop_t2 = clock();
+
+          dt = (double)(stop_t2 - start_t2)/CLOCKS_PER_SEC;
+
+          if(dt > 1){
+            start_t2 = clock();
+            sprintf(messageToMaster, "<2E%dBT2F%d>", cast_this_elevator->num, (floor +1));
+          	printf("SEND to master: %s\n", messageToMaster);
+            sendingFlag = 1;
+          }
 
       }
 
@@ -184,7 +199,12 @@ void* listen_for_button_input(void *this_elevator) {
           pthread_mutex_unlock(&elev_info_lock);
       }
      }
-    }
+     if (sendingFlag == 1){
+
+     send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+     sendingFlag = 0;
+   }
+  }
 
   return NULL;
 }
