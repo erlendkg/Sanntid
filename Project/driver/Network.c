@@ -26,12 +26,19 @@ int add_all_socks_to_fdlist(fd_set *readfds, Network_status *net_status) {
   return max_sd;
 }
 
+<<<<<<< HEAD
 int accept_client(Network_status *net_status, Elevator_data dataElevators[MAX_NUMBER_OF_ELEVATORS]) {
+=======
+int accept_clinet(Network_status *net_status) {
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
   int new_socket;
   int i;
   struct sockaddr_in address;
   int addrlen = sizeof address;
+<<<<<<< HEAD
   int queueNumber;
+=======
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 
   if((new_socket = accept(net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
     perror("accept");
@@ -47,6 +54,7 @@ int accept_client(Network_status *net_status, Elevator_data dataElevators[MAX_NU
           break;
         }
     }
+<<<<<<< HEAD
 
     //QUEUESTUFF2*******************************************************
     queueNumber = assignNumberToNewElevator(dataElevators, dataElevators[99].lengthOfElevatorArray);
@@ -64,6 +72,20 @@ void* listen_for_incoming_connections(void* net_status) {
   struct sockaddr_in address;
   int max_sd, sd, i, activity;
   int valread;
+=======
+}
+
+int read_message_from_client(int client_socket, char* buf) {
+
+}
+
+void *listen_for_incoming_connections(void* net_status) {
+  Network_status *my_net_status = (Network_status *) net_status;
+  struct sockaddr_in address;
+  int max_sd, sd, activity;
+  int new_socket;
+  int valread, i;
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
   fd_set readfds;
   int addrlen = sizeof address;
 
@@ -81,6 +103,7 @@ void* listen_for_incoming_connections(void* net_status) {
   // //QUEUESTUFF1*******************************************************
 
 
+
   if(listen(my_net_status->master_socket, MAX_NUMBER_OF_ELEVS) < 0) {
     perror("listen");
     exit(1);
@@ -88,15 +111,36 @@ void* listen_for_incoming_connections(void* net_status) {
 
   while(1) {
 
+<<<<<<< HEAD
 
 
     max_sd = add_all_socks_to_fdlist(&readfds, net_status);
+=======
+    max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 
     activity = select(max_sd +1, &readfds, NULL, NULL, NULL);
 
     if(FD_ISSET(my_net_status->master_socket, &readfds)) {
+<<<<<<< HEAD
         accept_client(my_net_status, dataElevators);
 
+=======
+
+      if (accept_clinet(my_net_status) == -1) {
+        printf("Failed to accept client\n");
+      }
+        // //QUEUESTUFF2*******************************************************
+        // printf("prøver å sende\n");
+        // queueNumber = assignNumberToNewElevator(dataElevators, lengthOfElevatorArray);
+        // activateSingleQueue(dataElevators, queueNumber);
+        // lengthOfElevatorArray ++;
+        // printf("prøver å sende her er queue number : %d\n", queueNumber);
+        // printf("prøver å sendLALDSALDSe\n");
+        // send(new_socket, queueNumber, 32, 0);
+        //   printf("prøver å sendTT\n");
+        // //QUEUESTUFF2*******************************************************
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
     }
     for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
       sd = my_net_status->client_sockets[i];
@@ -151,7 +195,7 @@ void* listen_for_incoming_connections(void* net_status) {
             memset(returnMessage, 0, sizeof(returnMessage));
 
           //QUEUESTUFF3*******************************************************
-        }
+          }
         }
       }
     }
@@ -213,10 +257,16 @@ int main_client(char const *server_ip) {
   }
 }
 
+<<<<<<< HEAD
 
 
+=======
+int wait_for_orders_from_server(int server_socket) {
+  return 0;
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 
 
+<<<<<<< HEAD
 void* thread_sendOrdersToIdleElevators(void *elevatorInfo){
     printf("Entering send to elevators thread\n");
   Elevator_data *myElevatorInfo = (Elevator_data *)elevatorInfo;
@@ -228,6 +278,10 @@ void* thread_sendOrdersToIdleElevators(void *elevatorInfo){
     for( i = 0; i <= myElevatorInfo[99].lengthOfElevatorArray; i++ ){
 
       if (myElevatorInfo[i].status == 2 && myElevatorInfo[i].queue[0] != 0){
+=======
+void *thread_recieve_orders_from_elevators(void *net_status) {
+    Network_status *my_net_status = (Network_status *) net_status;
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 
         printf("First pos in queue is: %d: \n", myElevatorInfo[i].queue[0]);
 
@@ -245,7 +299,6 @@ void* thread_sendOrdersToIdleElevators(void *elevatorInfo){
 
   return NULL;
 }
-
 
 
 
@@ -292,7 +345,6 @@ int initialize_client_socket(char const* server_ip) {
       freeaddrinfo(servinfo);
       return sockfd;
   }
-
 
 int initialize_server_socket() {
 
