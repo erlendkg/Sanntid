@@ -47,7 +47,7 @@ void place_bt0_order( Elevator_data E[N_ELEVATORS-1], int button_order, int leng
 void addNewOrderToQueue( Elevator_data E[N_ELEVATORS], int desired_floor, int buttonType, int elevator, int lengthOfElevatorArray);
 
 //Crash handling Functions
-void disableElevatorAndDistributeQueueToOtherElevators( Elevator_data E[N_ELEVATORS], int crashedElev, int lengthOfElevatorArray);
+void disableElevatorAndDistributeQueueToOtherElevators( Elevator_data E[N_ELEVATORS], int disconnectedSocket);
 
 //Message handling functions
 void unpackMessageToVariables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor);

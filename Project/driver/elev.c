@@ -144,8 +144,7 @@ void* listen_for_button_input(void *this_elevator) {
   Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
   char messageToMaster[512];
   clock_t start_t0 ,start_t1, start_t2, stop_t0, stop_t1, stop_t2;
-  double dt;
-  int sendingFlag;
+  double dt0, dt1, dt2;
 
   start_t0 = clock();
   start_t1 = clock();
@@ -153,56 +152,63 @@ void* listen_for_button_input(void *this_elevator) {
 
 
   while(1) {
-    memset(messageToMaster, 0, sizeof(messageToMaster));
+
     for(floor=0; floor<4; floor++){
       if (elev_get_button_signal(2, floor) == 1){
-          pthread_mutex_lock(&elev_info_lock);
-          // //printf("Floor %d, Inside\n", (floor+1));
-          // cast_this_elevator->button_floor = (floor +1);
-          // cast_this_elevator->button_type = 2;
-          // cast_this_elevator->button_click = 1;
-          // cast_this_elevator->is_busy = 1;
-          // cast_this_elevator->desired_floor = (floor +1);
-          pthread_mutex_unlock(&elev_info_lock);
 
           stop_t2 = clock();
 
-          dt = (double)(stop_t2 - start_t2)/CLOCKS_PER_SEC;
+          dt2 = (double)(stop_t2 - start_t2)/CLOCKS_PER_SEC;
 
-          if(dt > 1){
+          if(dt2 > 0.5){
             start_t2 = clock();
+
             sprintf(messageToMaster, "<2E%dBT2F%d>", cast_this_elevator->num, (floor +1));
           	printf("SEND to master: %s\n", messageToMaster);
-            sendingFlag = 1;
-          }
+
+            send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+
+            memset(messageToMaster, 0, sizeof(messageToMaster));
 
       }
+    }
 
       if (elev_get_button_signal(1, floor) == 1){
-          pthread_mutex_lock(&elev_info_lock);
-          //printf("Floor %d, Down\n", (floor+1));
-          cast_this_elevator->button_floor = (floor +1);
-          cast_this_elevator->button_type = 1;
-          cast_this_elevator->button_click = 1;
-          cast_this_elevator->is_busy = 1;
-          cast_this_elevator->desired_floor = (floor +1);
-          pthread_mutex_unlock(&elev_info_lock);
+
+        stop_t1 = clock();
+
+        dt1 = (double)(stop_t1 - start_t1)/CLOCKS_PER_SEC;
+
+        if(dt1 > 0.5){
+          start_t1 = clock();
+
+          sprintf(messageToMaster, "<2E%dBT1F%d>", cast_this_elevator->num, (floor +1));
+          printf("SEND to master: %s\n", messageToMaster);
+
+          send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+
+          memset(messageToMaster, 0, sizeof(messageToMaster));
+
       }
+    }
       if (elev_get_button_signal(0, floor) == 1){
-          pthread_mutex_lock(&elev_info_lock);
-          //printf("Floor %d, Up\n", (floor+1));
-          cast_this_elevator->button_floor = (floor +1);
-          cast_this_elevator->button_type = 0;
-          cast_this_elevator->button_click = 1;
-          cast_this_elevator->is_busy = 1;
-          cast_this_elevator->desired_floor = (floor +1);
-          pthread_mutex_unlock(&elev_info_lock);
+
+        stop_t0 = clock();
+
+        dt0 = (double)(stop_t0 - start_t0)/CLOCKS_PER_SEC;
+
+        if(dt0 > 0.5){
+          start_t0 = clock();
+
+          sprintf(messageToMaster, "<2E%dBT0F%d>", cast_this_elevator->num, (floor +1));
+          printf("SEND to master: %s\n", messageToMaster);
+
+          send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+
+          memset(messageToMaster, 0, sizeof(messageToMaster));
+
       }
      }
-     if (sendingFlag == 1){
-
-     send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
-     sendingFlag = 0;
    }
   }
 

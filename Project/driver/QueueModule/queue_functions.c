@@ -6,9 +6,9 @@ void print_queue(int order_queue[MAX_QUEUE_SIZE]) {
   printf("---------------------------------\n");
   for (int k = 0; k < MAX_QUEUE_SIZE; k++) {
     int order =   order_queue[k];
-    printf("%d\n",order);
+    printf("%d, ",order);
   }
-  printf("---------------------------------\n");
+  printf("\n---------------------------------\n");
 
 }
 
@@ -48,19 +48,28 @@ int isElevatorDisabled(int status){
     else {return 0;}
 }
 
-void disableElevatorAndDistributeQueueToOtherElevators( Elevator_data E[N_ELEVATORS], int crashedElev, int lengthOfElevatorArray){
+void disableElevatorAndDistributeQueueToOtherElevators( Elevator_data E[N_ELEVATORS], int disconnectedSocket){
 
   pthread_mutex_lock(&lock);
 
-  int i = 0;
+  int queueCounter = 0,elevCounter = 0, crashedElev;
+  int lengthOfElevatorArray = E[99].lengthOfElevatorArray;
+
+  while(1){
+    if (E[elevCounter].socket == disconnectedSocket){
+      crashedElev = elevCounter;
+      break;
+    }
+    elevCounter++;
+  }
 
   E[crashedElev].status = -1;
 
-  while (E[crashedElev].queue[i] != 0){
+  while (E[crashedElev].queue[queueCounter] != 0){
 
-    addNewOrderToQueue(E,E[crashedElev].queue[i],0,0,lengthOfElevatorArray);
+    addNewOrderToQueue(E,E[crashedElev].queue[queueCounter],0,0,lengthOfElevatorArray);
 
-    i++;
+    queueCounter++;
   }
   pthread_mutex_unlock(&lock);
 }
@@ -383,42 +392,44 @@ void unpackMessageToVariables(char *str, int *msgType, int *elevatorNumber, int 
 
 char *actOnMessageFromMaster(Elevator_data E[N_ELEVATORS], char *messageFromElevator, int lengthOfElevatorArray){
 
-  int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0;
+  int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0, isElevatorOnCorrectFloor;
   unpackMessageToVariables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor);
   //pthread_mutex_lock(&lock);
-  printf("messagetype: %d", msgType);
 
   if (msgType == 1){
 
     E[msgElevatorNumber].currentFloor = msgElevatorFloor;
 
-    if (isElevatorOnCorrectFloor(&E[msgElevatorNumber], msgElevatorFloor)){
-      printf("elevator 111\n");
-      if ( E[msgElevatorNumber].queue[0] != 0 ){
-        char *newMessage = (char*) malloc(16 * sizeof(int));
+    isElevatorOnCorrectFloor = (E[msgElevatorNumber].queue[0] == msgElevatorFloor);
 
+    if (isElevatorOnCorrectFloor == 1){
+
+      removeItemFromQueue(E[msgElevatorNumber].queue);
+
+      if (E[msgElevatorNumber].queue[0] == 0){
+
+        E[msgElevatorNumber].status = 2;
+        return "0";
+      }
+
+        updateElevatorStruct(E->queue, &E->status, &E->queueSize, E->currentFloor);
+
+        char *newMessage = (char*) malloc(16 * sizeof(int));
 
         sprintf(newMessage, "<1E%dF%d>", msgElevatorNumber, E[msgElevatorNumber].queue[0]);
 
-        //pthread_mutex_unlock(&lock);
-
         return newMessage;
-    }
-    else if (E[msgElevatorNumber].queue[0] == 0){
+      }
+      else if (isElevatorOnCorrectFloor == 0) {
 
-      E[msgElevatorNumber].status = 2;
-      return "0";
-    }
-    }
-  }
-    else if (msgType == 2){
-      printf("elevator 2222\n");
+      char *newMessage = (char*) malloc(16 * sizeof(int));
+
+      }
+    } else if (msgType == 2) {
       addNewOrderToQueue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, lengthOfElevatorArray);
-      pthread_mutex_unlock(&lock);
-
+      //pthread_mutex_unlock(&lock);
       return "2";
-    }
-    else{
+    }  else {
     //  //pthread_mutex_unlock(&lock);
 
       //HER SKAL VI SENDE SAMME ORDRE PÅ NYTT

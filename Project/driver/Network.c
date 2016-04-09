@@ -107,9 +107,17 @@ void* listen_for_incoming_connections(void* net_status) {
           printf("Client disconnected , ip %s , port %d \n" , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
 
           //Close the socket and mark as 0 in list for reuse
+
+          disableElevatorAndDistributeQueueToOtherElevators(dataElevators, sd);
+
           close(sd);
           my_net_status->client_sockets[i] = 0;
           my_net_status->active_connections -= 1;
+
+
+
+
+
         } else {
           //QUEUESTUFF3*******************************************************
             printf("\n\nMottatt meldingen %s på socket %d\n",buffer, sd );
@@ -141,9 +149,13 @@ void* listen_for_incoming_connections(void* net_status) {
             printf("lengthOfElevArray: %d", dataElevators[99].lengthOfElevatorArray);
 
             for(int i = 0; i < dataElevators[99].lengthOfElevatorArray; i++){
-              printf("\n\nTis is Queue %d\n", i);
-              printf("Status is %d\n", dataElevators[i].status);
-              print_queue(dataElevators[i].queue);
+              if (dataElevators[i].status != -1){
+                printf("\n\n******************************************\n");
+                printf("Queue number: %d\t", i);
+                printf("Status: %d\n", dataElevators[i].status);
+                print_queue(dataElevators[i].queue);
+                printf("******************************************\n\n");
+              }
             }
 
 
