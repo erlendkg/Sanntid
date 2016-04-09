@@ -9,6 +9,7 @@ int initialize_hardware() {
 int go_to_floor(int desired_floor) {
   int current_floor;
 
+
   while(1) {
     if((current_floor = return_current_floor()) != -1) {
       if(current_floor < desired_floor){

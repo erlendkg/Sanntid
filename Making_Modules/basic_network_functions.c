@@ -105,7 +105,7 @@ int add_all_socks_to_fdlist(fd_set *readfds, Network_status *net_status) {
   return max_sd;
 }
 
-int accept_client(Network_status *net_status) {
+int accept_client(Network_status *net_status, int *new_socket_pointer) {
   int new_socket;
   int i;
   struct sockaddr_in address;
@@ -115,6 +115,8 @@ int accept_client(Network_status *net_status) {
     perror("accept");
     return -1;
   }
+
+
   printf("New elevator connected, socket fd is %d, ip is: %s, port %d\n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 
   for (i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
@@ -122,9 +124,11 @@ int accept_client(Network_status *net_status) {
           net_status->client_sockets[i] = new_socket;
           net_status->active_connections += 1;
           printf("Adding to list of sockets as %d\n" , i);
+          *new_socket_pointer = new_socket;
           break;
         }
     }
+    return 0;
 }
 
 int send_all(int recipient_socket, char *buf, int *len) {
@@ -161,11 +165,12 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
 
     if(FD_ISSET(master_socket, &serverfd))
     {
-      valread = read(master_socket, buffer, buffer_size);
+      valread = read(master_socket, &buffer, buffer_size);
       if(valread == 0) {
-        printf("Lost Server\n");
+        //printf("Lost Server\n");
         return -1;
       } else {
+        printf("got message: %s", buffer);
         return 1;
       }
     }

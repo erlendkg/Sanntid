@@ -1,5 +1,5 @@
 # Which compiler to use
-CC = gcc
+CC = clang-3.5
 
 # Compiler flags go here.
 CFLAGS += -std=gnu11 -g -Wall -Wextra

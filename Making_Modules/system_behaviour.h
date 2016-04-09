@@ -1,6 +1,9 @@
 #include "basic_network_functions.h"
 #include "basic_elevator_functions.h"
+#include "basic_queue_functions.h"
 #include <pthread.h>
+
+#include "elev.h"
 
 typedef struct {
   int num;
@@ -21,7 +24,10 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
 int main_server();
 int main_client(char const *server_ip);
 
-void* thread_listen_for_button_input(void *this_elevator);
-void* thread_carry_out_orders(void *this_elevator);
+void* thread_listen_for_button_input_single_elevator_mode(void *this_elevator);
+void* thread_listen_for_button_input_and_send_to_master(void *this_elevator);
+void* thread_carry_out_orders_single_elevator_mode(void *this_elevator);
+void* thread_carry_out_orders_network_mode(void *this_elevator);
 void* thread_main_server(void *net_status);
 void* thread_main_client(void *this_elevator);
+void* thread_send_orders_to_idle_elevators(void *elevatorInfo);
