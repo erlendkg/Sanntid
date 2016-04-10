@@ -52,23 +52,25 @@ int return_current_floor() {
 
 int return_button_input(Button_click *button_order) {
     int floor;
-    int input[2];
 
     while(1) {
       for(floor = 0; floor < N_FLOORS; floor++) {
         if(elev_get_button_signal(2, floor) == 1) {
           button_order->button_type = 2;
           button_order->button_floor = (floor +1);
+          sleep(1);
           return 0;
         }
         if(elev_get_button_signal(1,floor) == 1) {
           button_order->button_type= 1;
           button_order->button_floor = (floor +1);
+          sleep(1);
           return 0;
         }
        if(elev_get_button_signal(0,floor) == 1) {
          button_order->button_type = 0;
          button_order->button_floor = (floor +1);
+         sleep(1);
          return 0;
       }
     }

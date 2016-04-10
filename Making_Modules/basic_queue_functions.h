@@ -10,6 +10,7 @@
 
 #define QUEUE_SIZE 10
 #define MAX_NUMBER_OF_ELEVATORS 100
+#define N_FLOORS 4
 
 typedef struct {
   int queue[QUEUE_SIZE];
@@ -56,8 +57,7 @@ int assign_number_to_new_elevator( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int
 void activate_single_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int elevatorNumber);
 
 //When recieving a message from master
-char *act_on_message_from_master( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array);
+char *act_on_message_from_master( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array,int light_matrix[N_FLOORS][2]);
 void add_element_to_matrix(int matrix[N_FLOORS][2], int row, int col);
-void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor, int* light_status);
-
+void unpack_message_to_variables(char* str, int message_type, int* elevatorNumber, int* buttonType, int* elevatorFloor);
 #endif

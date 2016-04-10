@@ -24,8 +24,7 @@ void network_elevator_mode(Elev_info *this_elevator, char const* server_ip);
 int main_server();
 int main_client(char const *server_ip);
 
-void* thread_listen_for_button_input_single_elevator_mode(void *this_elevator);
-void* thread_listen_for_button_input_and_send_to_master(void *this_elevator);
+void* thread_listen_for_button_input(void *this_elevator);
 void* thread_carry_out_orders_single_elevator_mode(void *this_elevator);
 void* thread_carry_out_orders_network_mode(void *this_elevator);
 void* thread_send_to_master(void *this_elevator);
