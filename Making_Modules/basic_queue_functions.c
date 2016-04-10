@@ -374,7 +374,14 @@ void unpack_message_to_variables(char* str, int* msgType, int* elevatorNumber, i
   *light_status = temp_light_status;
 }
 
-char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array){
+void add_element_to_matrix(int matrix[N_FLOORS][2], int row, int col){
+  matrix[row][col] = 1;
+}
+void remove_element_from_matrix(int matrix[N_FLOORS][2], int row, int col){
+  matrix[row][col] = 0;
+}
+
+char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array, int light_matrix[N_FLOORS][2]){
 
   int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0, is_elevator_on_correct_floor, light_status;
   unpack_message_to_variables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor, &light_status);
@@ -383,7 +390,7 @@ char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char 
   if (msgType == 1){
 
     E[msgElevatorNumber].current_floor = msgElevatorFloor;
-
+    remove_element_from_matrix(light_matrix, msgElevatorFloor, msgButtonType);
 
     is_elevator_on_correct_floor = (E[msgElevatorNumber].queue[0] == msgElevatorFloor);
 
@@ -407,7 +414,10 @@ char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char 
 
   } else if (msgType == 2) {
       add_new_order_to_queue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, length_of_elevator_array);
-      //pthread_mutex_unlock(&lock);
+
+      if(msgButtonType != 2){
+        add_element_to_matrix(light_matrix, msgElevatorFloor, msgButtonType);
+      }
       return "2";
   }  else {
   //  //pthread_mutex_unlock(&lock);

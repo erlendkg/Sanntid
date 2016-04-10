@@ -47,7 +47,6 @@ void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desir
 void disable_elevator_and_distribute_queue_to_other_elevators( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int disconnectedSocket);
 
 //Message handling functions
-void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor, int* light_status);
 
 //Startup functions
 void initiate_queues( Elevator_data E[MAX_NUMBER_OF_ELEVATORS]);
@@ -58,5 +57,7 @@ void activate_single_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int elevat
 
 //When recieving a message from master
 char *act_on_message_from_master( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array);
+void add_element_to_matrix(int matrix[N_FLOORS][2], int row, int col);
+void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor, int* light_status);
 
 #endif
