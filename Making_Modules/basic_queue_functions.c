@@ -346,11 +346,10 @@ void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desir
   }
 }
 
+void unpack_message_to_variables(char* str, int* msgType, int* elevatorNumber, int* buttonType, int* elevatorFloor, int* light_status) {
 
-void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor) {
 
-
-  int tempMsgType = -1, tempMsgEl = -1, tempMsgFloor = -1, tempMsgButton = -1;
+  int tempMsgType = -1, tempMsgEl = -1, tempMsgFloor = -1, tempMsgButton = -1, temp_light_status = -1;
 
   tempMsgType = str[1] - '0';
 
@@ -364,24 +363,27 @@ void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, i
 
     sscanf(str, "<2E%dBT%dF%d>", &tempMsgEl, &tempMsgButton, &tempMsgFloor);
 
+  } else if (tempMsgType == 3) {
+    sscanf(str, "<3F%dBT%dT%d>", &tempMsgEl, &tempMsgButton, &temp_light_status);
   }
 
   *msgType = tempMsgType;
   *elevatorNumber = tempMsgEl;
   *buttonType = tempMsgButton;
   *elevatorFloor = tempMsgFloor;
+  *light_status = temp_light_status;
 }
 
 char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array){
 
-  int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0, is_elevator_on_correct_floor;
-  unpack_message_to_variables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor);
+  int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0, is_elevator_on_correct_floor, light_status;
+  unpack_message_to_variables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor, &light_status);
 
 
   if (msgType == 1){
 
     E[msgElevatorNumber].current_floor = msgElevatorFloor;
-    
+
 
     is_elevator_on_correct_floor = (E[msgElevatorNumber].queue[0] == msgElevatorFloor);
 

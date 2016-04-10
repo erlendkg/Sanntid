@@ -1,9 +1,9 @@
 #include "basic_network_functions.h"
 #include "basic_elevator_functions.h"
 #include "basic_queue_functions.h"
+#include "basic_light_functions.h"
 #include <pthread.h>
 
-#include "elev.h"
 
 typedef struct {
   int num;
@@ -20,7 +20,7 @@ typedef struct {
 
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
-void network_elevator_mode(Elev_info *this_elevator);
+void network_elevator_mode(Elev_info *this_elevator, char const* server_ip);
 int main_server();
 int main_client(char const *server_ip);
 

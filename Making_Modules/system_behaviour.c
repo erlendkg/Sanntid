@@ -7,6 +7,7 @@ pthread_mutex_t door_open_lock;
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   int i;
   pthread_t button_input, carry_out_orders;
+  printf("Single elevator mode \n");
 
   this_elevator->is_busy = 0;
   this_elevator->current_floor = return_current_floor();
@@ -25,7 +26,6 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
       pthread_cancel(carry_out_orders);
       this_elevator->server_socket = *server_socket;
       //sende info til server
-
       return 0;
     }
   }
@@ -33,9 +33,10 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
   pthread_join(button_input, NULL);
 }
 
-void network_elevator_mode(Elev_info *this_elevator) {
+void network_elevator_mode(Elev_info *this_elevator, char const *server_ip) {
   this_elevator->is_connected_to_network = 1;
   pthread_t button_input, main_client, message_to_master;
+  int server_socket = this_elevator->server_socket;
 
 
    this_elevator->desired_floor[0] = 1;
@@ -45,10 +46,14 @@ void network_elevator_mode(Elev_info *this_elevator) {
   pthread_create(&main_client, NULL, thread_recieve_orders_and_operate_elevator, (void*) this_elevator);
   pthread_create(&message_to_master, NULL, thread_send_to_master, (void*) this_elevator);
 
-
-  pthread_join(button_input, NULL);
   pthread_join(main_client, NULL);
-  pthread_join(message_to_master, NULL);
+  pthread_cancel(button_input);
+  pthread_cancel(message_to_master);
+
+  this_elevator->server_socket = 0;
+  this_elevator->is_connected_to_network = 0;
+
+  single_elevator_mode(this_elevator,&server_socket, server_ip);
 
   }
 
@@ -83,7 +88,7 @@ int main_client(char const *server_ip) {
     if (this_elevator->is_connected_to_network == 1) {
         //printf("Elevator is now i network mode");
 
-        network_elevator_mode(this_elevator);
+        network_elevator_mode(this_elevator, server_ip);
 
       }
     }
@@ -92,7 +97,7 @@ int main_client(char const *server_ip) {
 
 void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
-  int a, b, c, new_desired_floor;
+  int message_type, b, c, new_desired_floor, light_status;
   int initial_message;
   char buffer[512];
   int length = sizeof(buffer);
@@ -107,42 +112,36 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   my_this_elevator->num = initial_message;
   printf("My number is %d", initial_message);
 
-
   while(1) {
 
     if (listen_for_message_from_master(buffer, my_this_elevator->server_socket, sizeof(buffer)) == -1){
       printf("Disconnected from master\n");
-      //Stop thread
+      return NULL;
     } else {
-            printf("*****************************\n");
-            printf("Message from master: %s\n", buffer);
-            printf("*****************************\n\n");
+      printf("*****************************\n");
+      printf("Message from master: %s\n", buffer);
+      printf("*****************************\n\n");
 
+      unpack_message_to_variables(buffer, &message_type, &b, &c, &new_desired_floor, &light_status);
+      memset(buffer, 0, sizeof(buffer));
 
-            unpack_message_to_variables(buffer, &a, &b, &c, &new_desired_floor);
-            memset(buffer, 0, sizeof(buffer));
+      if(new_desired_floor != my_this_elevator->desired_floor[0]){
+        my_this_elevator->desired_floor[0] = new_desired_floor;
+        pthread_mutex_lock(&door_open_lock);
+        printf("Operator locked mutex\n");
 
-            if(new_desired_floor != my_this_elevator->desired_floor[0]){
+        if((message_type = pthread_cancel(carry_out_orders)) != 0){
+          printf("couldnt close thread: %d\n", message_type);
+        }
+        pthread_mutex_unlock(&door_open_lock);
+        printf("Operator unlocked mutex\n");
 
-              my_this_elevator->desired_floor[0] = new_desired_floor;
-              pthread_mutex_lock(&door_open_lock);
-                printf("Operator locked mutex\n");
-
-              if((a = pthread_cancel(carry_out_orders)) != 0){
-                printf("couldnt close thread: %d\n", a);
-              }
-              pthread_mutex_unlock(&door_open_lock);
-              printf("Operator unlocked mutex\n");
-
-              pthread_create(&carry_out_orders, NULL, thread_carry_out_orders_network_mode, (void*) this_elevator);
-              printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
-            }
-
-
-
-
-
-
+        pthread_create(&carry_out_orders, NULL, thread_carry_out_orders_network_mode, (void*) this_elevator);
+        printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
+      }
+      if(message_type == 3) {
+        update_button_lights(c, new_desired_floor, light_status);
+      }
     }
   }
 }
@@ -180,6 +179,7 @@ void* thread_carry_out_orders_network_mode(void *this_elevator){
   Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
 
     if (cast_this_elevator->desired_floor[0] != cast_this_elevator->current_floor){
+
       go_to_floor(cast_this_elevator->desired_floor[0]);
       pthread_mutex_lock(&door_open_lock);
       printf("holder døren åpen\n");
@@ -360,8 +360,6 @@ void* thread_send_to_master(void *this_elevator){
       }
   }
 
-
-
 int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
@@ -479,8 +477,8 @@ void* thread_main_server(void *net_status) {
   }
 }
 
-void* thread_send_orders_to_idle_elevators(void *elevatorInfo){
-      printf("Entering send to elevators thread\n");
+void* thread_send_orders_to_idle_elevators(void* elevatorInfo){
+    printf("Entering send to elevators thread\n");
     Elevator_data *myElevatorInfo = (Elevator_data *)elevatorInfo;
     char messageToElevator[512];
     int i;
