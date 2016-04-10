@@ -29,13 +29,17 @@ int go_to_floor(int desired_floor) {
 int hold_doors_open(int duration) {
   int floor;
 
+  printf("kom inn\n");
+
   if((floor = elev_get_floor_sensor_signal()) == -1) {
     fprintf(stderr, "Elevator between floors\n");
     return -1;
   }
 
   elev_set_door_open_lamp(1);
+  printf("sover i et sec\n");
   sleep(duration);
+  printf("ferdig med det ass\n");
   elev_set_door_open_lamp(0);
   return 1;
 }

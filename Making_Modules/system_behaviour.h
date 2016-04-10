@@ -20,7 +20,7 @@ typedef struct {
 
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
-int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip);
+void network_elevator_mode(Elev_info *this_elevator);
 int main_server();
 int main_client(char const *server_ip);
 
@@ -28,6 +28,7 @@ void* thread_listen_for_button_input_single_elevator_mode(void *this_elevator);
 void* thread_listen_for_button_input_and_send_to_master(void *this_elevator);
 void* thread_carry_out_orders_single_elevator_mode(void *this_elevator);
 void* thread_carry_out_orders_network_mode(void *this_elevator);
+void* thread_send_to_master(void *this_elevator);
 void* thread_main_server(void *net_status);
-void* thread_main_client(void *this_elevator);
+void* thread_recieve_orders_and_operate_elevator(void *this_elevator);
 void* thread_send_orders_to_idle_elevators(void *elevatorInfo);

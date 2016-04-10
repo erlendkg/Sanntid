@@ -33,17 +33,22 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
   pthread_join(button_input, NULL);
 }
 
-int network_elevator_mode(Elev_info *this_elevator, int server_socket, char const *server_ip) {
+void network_elevator_mode(Elev_info *this_elevator) {
   this_elevator->is_connected_to_network = 1;
-  pthread_t button_input, main_client, send_to_master;
+  pthread_t button_input, main_client, message_to_master;
 
-  this_elevator->desired_floor[0] = 1;
+
+   this_elevator->desired_floor[0] = 1;
 
 
   pthread_create(&button_input, NULL, thread_listen_for_button_input_and_send_to_master, (void*) this_elevator);
-  pthread_create(&main_client, NULL, thread_main_client, (void*) this_elevator);
-  pthread_create(&main_client, NULL, thread_main_client, (void*) this_elevator);
+  pthread_create(&main_client, NULL, thread_recieve_orders_and_operate_elevator, (void*) this_elevator);
+  pthread_create(&message_to_master, NULL, thread_send_to_master, (void*) this_elevator);
 
+
+  pthread_join(button_input, NULL);
+  pthread_join(main_client, NULL);
+  pthread_join(message_to_master, NULL);
 
   }
 
@@ -52,6 +57,8 @@ int main_client(char const *server_ip) {
   Elev_info *this_elevator = malloc(sizeof(Elev_info));
 
   pthread_mutex_init(&elev_info_lock, NULL);
+  pthread_mutex_init(&door_open_lock, NULL);
+
 
   initialize_hardware();
 
@@ -76,14 +83,14 @@ int main_client(char const *server_ip) {
     if (this_elevator->is_connected_to_network == 1) {
         //printf("Elevator is now i network mode");
 
-        network_elevator_mode(this_elevator, server_socket, server_ip);
+        network_elevator_mode(this_elevator);
 
       }
     }
 
   }
 
-void* thread_main_client(void *this_elevator) {
+void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
   int a, b, c, new_desired_floor;
   int initial_message;
@@ -91,16 +98,13 @@ void* thread_main_client(void *this_elevator) {
   pthread_t carry_out_orders;
   memset(buffer, 0, sizeof(buffer));
 
-  pthread_mutex_init(&door_open_lock, NULL);
-
-
   if (recv(my_this_elevator->server_socket, &initial_message, sizeof(initial_message), 0) == 0){
     printf("Dissconnected from master\n");
     //Stop thread
   }
 
   my_this_elevator->num = initial_message;
-  printf("This elevator is number %d\n", my_this_elevator->num);
+  printf("My number is %d", initial_message);
 
   while(1) {
 
@@ -112,16 +116,23 @@ void* thread_main_client(void *this_elevator) {
             printf("Message from master: %s\n", buffer);
             printf("*****************************\n\n");
 
+
             unpack_message_to_variables(buffer, &a, &b, &c, &new_desired_floor);
             memset(buffer, 0, sizeof(buffer));
 
+            printf("new des: %d, old des: %d\n",new_desired_floor, my_this_elevator->desired_floor[0] );
             if(new_desired_floor != my_this_elevator->desired_floor[0]){
 
               my_this_elevator->desired_floor[0] = new_desired_floor;
+              pthread_mutex_lock(&door_open_lock);
+                printf("Operator locked mutex\n");
 
-              if(a = pthread_cancel(carry_out_orders) != 0){
+              if((a = pthread_cancel(carry_out_orders)) != 0){
                 printf("couldnt close thread: %d\n", a);
               }
+              pthread_mutex_unlock(&door_open_lock);
+              printf("Operator unlocked mutex\n");
+
               pthread_create(&carry_out_orders, NULL, thread_carry_out_orders_network_mode, (void*) this_elevator);
 
               printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
@@ -169,14 +180,15 @@ void* thread_carry_out_orders_network_mode(void *this_elevator){
 
     if (cast_this_elevator->desired_floor[0] != cast_this_elevator->current_floor){
       go_to_floor(cast_this_elevator->desired_floor[0]);
-      printf("holder døren åpen\n");
       pthread_mutex_lock(&door_open_lock);
+      printf("holder døren åpen\n");
       hold_doors_open(1);
+      printf("kom ut\n");
       pthread_mutex_unlock(&door_open_lock);
       printf("lukker døren\n");
 
-
       }
+      return 0;
 
 }
 
@@ -347,6 +359,8 @@ void* thread_send_to_master(void *this_elevator){
         }
       }
   }
+
+
 
 
 int main_server() {
