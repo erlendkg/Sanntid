@@ -71,6 +71,11 @@ void disable_elevator_and_distribute_queue_to_other_elevators( Elevator_data E[M
 
     queueCounter++;
   }
+
+  if (crashedElev == length_of_elevator_array - 1){
+    E[99].length_of_elevator_array --;
+  }
+
   pthread_mutex_unlock(&lock);
 }
 
@@ -245,7 +250,6 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
   int smallest_elev;
 
   for(int i = 0; i < length_of_elevator_array; i++){
-
     //Check if the elevator is disabled, jump over it if it is.
     i = i + is_elevator_disabled(E[i].status);
 
@@ -270,12 +274,10 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
     if((i >= length_of_elevator_array - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
       update_elevator_struct(E[i].queue, &E[i].status, &E[i].queue_size, E[i].current_floor);
-
     }
     else if((i >= length_of_elevator_array - 1) && (closest_elev == -1)){
-      //insert_item(E[smallest_elev].queue, 0, button_order);
 
-      insert_item(E[smallest_elev].queue, E[smallest_elev].queue_size, button_order);
+      place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
       update_elevator_struct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
     }
   }
@@ -314,10 +316,9 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
 
     //the order was not on the way for any elevators,
     if((i == length_of_elevator_array - 1) && (closest_elev != -1)){
-
       insert_item(E[closest_elev].queue, 0, button_order);
       update_elevator_struct(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queue_size, E[closest_elev].current_floor);
-        }
+      }
     else if((i == length_of_elevator_array - 1) && (closest_elev == -1)){
 
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
@@ -364,7 +365,7 @@ void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, i
     sscanf(str, "<2E%dBT%dF%d>", &tempMsgEl, &tempMsgButton, &tempMsgFloor);
 
   }
-  printf("%d, %d, %d, %d\n",tempMsgType, tempMsgEl, tempMsgFloor, tempMsgButton);
+
   *msgType = tempMsgType;
   *elevatorNumber = tempMsgEl;
   *buttonType = tempMsgButton;
@@ -386,35 +387,30 @@ char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char 
     if (is_elevator_on_correct_floor == 1){
 
       remove_item_from_queue(E[msgElevatorNumber].queue);
+    }
 
-      if (E[msgElevatorNumber].queue[0] == 0){
+    if (E[msgElevatorNumber].queue[0] == 0){
 
-        E[msgElevatorNumber].status = 2;
-        return "0";
-      }
+      E[msgElevatorNumber].status = 2;
+      printf("oppdaterer status til 2\n");
+      return "0";
+    }
 
-        update_elevator_struct(E->queue, &E->status, &E->queue_size, E->current_floor);
+    update_elevator_struct(E->queue, &E->status, &E->queue_size, E->current_floor);
+    char *newMessage = (char*) malloc(16 * sizeof(int));
+    sprintf(newMessage, "<1E%dF%d>", msgElevatorNumber, E[msgElevatorNumber].queue[0]);
+    return newMessage;
 
-        char *newMessage = (char*) malloc(16 * sizeof(int));
 
-        sprintf(newMessage, "<1E%dF%d>", msgElevatorNumber, E[msgElevatorNumber].queue[0]);
-
-        return newMessage;
-      }
-      else if (is_elevator_on_correct_floor == 0) {
-
-      char *newMessage = (char*) malloc(16 * sizeof(int));
-
-      }
-    } else if (msgType == 2) {
+  } else if (msgType == 2) {
       add_new_order_to_queue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, length_of_elevator_array);
       //pthread_mutex_unlock(&lock);
       return "2";
-    }  else {
-    //  //pthread_mutex_unlock(&lock);
+  }  else {
+  //  //pthread_mutex_unlock(&lock);
 
-      //HER SKAL VI SENDE SAMME ORDRE PÅ NYTT
-      return "fault";
-    }
-    return "error";
+    //HER SKAL VI SENDE SAMME ORDRE PÅ NYTT
+    return "fault";
+  }
+  return "error";
 }
