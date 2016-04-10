@@ -94,6 +94,7 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
   int a, b, c, new_desired_floor;
   int initial_message;
+  int length = sizeof(Elev_info);
   char buffer[512];
   pthread_t carry_out_orders;
   memset(buffer, 0, sizeof(buffer));
@@ -120,7 +121,6 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
             unpack_message_to_variables(buffer, &a, &b, &c, &new_desired_floor);
             memset(buffer, 0, sizeof(buffer));
 
-            printf("new des: %d, old des: %d\n",new_desired_floor, my_this_elevator->desired_floor[0] );
             if(new_desired_floor != my_this_elevator->desired_floor[0]){
 
               my_this_elevator->desired_floor[0] = new_desired_floor;
@@ -133,11 +133,11 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
               pthread_mutex_unlock(&door_open_lock);
               printf("Operator unlocked mutex\n");
 
+            }
               pthread_create(&carry_out_orders, NULL, thread_carry_out_orders_network_mode, (void*) this_elevator);
 
               printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
 
-            }
 
 
 
