@@ -134,10 +134,10 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
               pthread_mutex_unlock(&door_open_lock);
               printf("Operator unlocked mutex\n");
 
-            }
               pthread_create(&carry_out_orders, NULL, thread_carry_out_orders_network_mode, (void*) this_elevator);
-
               printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
+            }
+
 
 
 
@@ -189,7 +189,7 @@ void* thread_carry_out_orders_network_mode(void *this_elevator){
       printf("lukker døren\n");
 
       }
-      return 0;
+      return NULL;
 
 }
 
@@ -335,8 +335,7 @@ void* thread_send_to_master(void *this_elevator){
   int New_floor;
 
   memset(message, 0, sizeof(message));
-
-    while(1) {
+  while(1){
       if(cast_this_elevator->is_connected_to_network == 1) {
 
         New_floor = return_current_floor();
@@ -360,7 +359,6 @@ void* thread_send_to_master(void *this_elevator){
         }
       }
   }
-
 
 
 
