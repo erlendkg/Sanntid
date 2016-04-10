@@ -165,7 +165,7 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
 
     if(FD_ISSET(master_socket, &serverfd))
     {
-      valread = read(master_socket, &buffer, buffer_size);
+      valread = recv(master_socket, buffer, buffer_size, 0);
       if(valread == 0) {
         //printf("Lost Server\n");
         return -1;

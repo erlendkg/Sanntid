@@ -95,22 +95,22 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   int a, b, c, new_desired_floor;
   int initial_message;
   char buffer[512];
+  int length = sizeof(buffer);
   pthread_t carry_out_orders;
   memset(buffer, 0, sizeof(buffer));
 
 
-
-  if (recv(my_this_elevator->server_socket, &initial_message, sizeof(initial_message), 0) == 0){
-    printf("Dissconnected from master\n");
-    //Stop thread
+  if(recv(my_this_elevator->server_socket, &initial_message, sizeof(initial_message),0) == 0) {
+    printf("Disconnected from server\n");
   }
 
   my_this_elevator->num = initial_message;
   printf("My number is %d", initial_message);
 
+
   while(1) {
 
-    if (recv(my_this_elevator->server_socket, buffer, sizeof(buffer), 0) == 0){
+    if (listen_for_message_from_master(buffer, my_this_elevator->server_socket, sizeof(buffer)) == -1){
       printf("Disconnected from master\n");
       //Stop thread
     } else {
