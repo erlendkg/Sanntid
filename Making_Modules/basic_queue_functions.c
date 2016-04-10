@@ -376,11 +376,12 @@ char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char 
 
   int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0, is_elevator_on_correct_floor;
   unpack_message_to_variables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor);
-  //pthread_mutex_lock(&lock);
+
 
   if (msgType == 1){
 
     E[msgElevatorNumber].current_floor = msgElevatorFloor;
+    
 
     is_elevator_on_correct_floor = (E[msgElevatorNumber].queue[0] == msgElevatorFloor);
 

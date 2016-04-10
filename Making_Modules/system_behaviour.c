@@ -94,10 +94,11 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
   int a, b, c, new_desired_floor;
   int initial_message;
-  int length = sizeof(Elev_info);
   char buffer[512];
   pthread_t carry_out_orders;
   memset(buffer, 0, sizeof(buffer));
+
+
 
   if (recv(my_this_elevator->server_socket, &initial_message, sizeof(initial_message), 0) == 0){
     printf("Dissconnected from master\n");
@@ -467,6 +468,7 @@ void* thread_main_server(void *net_status) {
               printf("\n\n******************************************\n");
               printf("Queue number: %d\t", i);
               printf("Status: %d\n", Data_elevators[i].status);
+              printf("Current_floor: %d\n", Data_elevators[i].current_floor);
               print_queue(Data_elevators[i].queue);
               printf("******************************************\n\n");
             }
