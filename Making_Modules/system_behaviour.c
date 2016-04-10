@@ -37,9 +37,7 @@ void network_elevator_mode(Elev_info *this_elevator) {
   this_elevator->is_connected_to_network = 1;
   pthread_t button_input, main_client, message_to_master;
 
-
-   this_elevator->desired_floor[0] = 1;
-
+  this_elevator->desired_floor[0] = 1;
 
   pthread_create(&button_input, NULL, thread_listen_for_button_input_and_send_to_master, (void*) this_elevator);
   pthread_create(&main_client, NULL, thread_recieve_orders_and_operate_elevator, (void*) this_elevator);
@@ -131,17 +129,13 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
               if((a = pthread_cancel(carry_out_orders)) != 0){
                 printf("couldnt close thread: %d\n", a);
               }
+
               pthread_mutex_unlock(&door_open_lock);
               printf("Operator unlocked mutex\n");
+              }
 
-            }
               pthread_create(&carry_out_orders, NULL, thread_carry_out_orders_network_mode, (void*) this_elevator);
-
               printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
-
-
-
-
 
     }
   }
@@ -361,9 +355,6 @@ void* thread_send_to_master(void *this_elevator){
       }
   }
 
-
-
-
 int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
@@ -449,7 +440,6 @@ void* thread_main_server(void *net_status) {
 
           if (strcmp(return_message, "2") == 0) {
 
-            printf("Order has been added to queue\n");
 
           }
           else if (strcmp(return_message, "0") == 0){

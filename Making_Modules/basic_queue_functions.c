@@ -381,7 +381,7 @@ char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char 
   if (msgType == 1){
 
     E[msgElevatorNumber].current_floor = msgElevatorFloor;
-    
+
 
     is_elevator_on_correct_floor = (E[msgElevatorNumber].queue[0] == msgElevatorFloor);
 
@@ -405,8 +405,8 @@ char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char 
 
   } else if (msgType == 2) {
       add_new_order_to_queue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, length_of_elevator_array);
-      //pthread_mutex_unlock(&lock);
-      return "2";
+      printf("order added to queue\n");
+        return "2";
   }  else {
   //  //pthread_mutex_unlock(&lock);
 
