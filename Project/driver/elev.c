@@ -21,9 +21,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-
 #define MOTOR_SPEED 2800
-
 
 static const int lamp_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
@@ -39,7 +37,6 @@ static const int button_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {BUTTON_UP3, BUTTON_DOWN3, BUTTON_COMMAND3},
     {BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 };
-
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   pthread_t button_input, go_to_floor;
@@ -72,6 +69,7 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
 
   pthread_create(&button_input, NULL, listen_for_button_input, (void*) this_elevator);
 
+<<<<<<< HEAD
   memset(incomingMessage, 0, sizeof(incomingMessage));
   recv(server_socket, &incomingMessage, sizeof(incomingMessage), 0);
   this_elevator->num = atoi(incomingMessage);
@@ -88,6 +86,11 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
   	printf("Waiting for order from master?\n");
 
     recv(server_socket, incomingMessage, sizeof(incomingMessage), 0);
+=======
+  elev_go_to_floorFUNCTION(this_elevator);
+
+  while(1) {
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 
       printf("Recieved msg: %s\n", incomingMessage);
       sscanf(incomingMessage, "<1E%dF%d>", &b, &this_elevator->desired_floor);
@@ -101,7 +104,11 @@ int network_elevator_mode(Elev_info *this_elevator, int server_socket, char cons
 
   }
 
+<<<<<<< HEAD
   return 0;
+=======
+  }
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 }
 
 void* send_status_to_server(void* this_elevator) {
@@ -113,8 +120,11 @@ void* send_status_to_server(void* this_elevator) {
   sprintf(message, "%d%d", my_this_elevator->current_floor, my_this_elevator->desired_floor);
   sendall(my_this_elevator->server_socket, message, &length);
   }
+<<<<<<< HEAD
 
   return NULL;
+=======
+>>>>>>> 17c73c19ba574cc3018f60c5ef4de937070271c0
 }
 
 int run_down_until_hit_floor(){
@@ -221,8 +231,6 @@ void* elev_go_to_floor(void *this_elevator) {
 
   while(1){
 
-
-
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal  != cast_this_elevator->current_floor) { //INSIDE HERE WE NEED TO SEND A MESSAGE TO MASTER **************************
 
@@ -258,9 +266,6 @@ int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
   int floorSignal;
 
   while(1){
-
-
-
     if ((floorSignal = elev_get_floor_sensor_signal()) != -1) {
       if (floorSignal  != cast_this_elevator->current_floor) { //INSIDE HERE WE NEED TO SEND A MESSAGE TO MASTER **************************
 
@@ -291,7 +296,7 @@ int elev_go_to_floorFUNCTION(Elev_info *cast_this_elevator) {
 
 }
 
-char *get_string(int msgType, Elev_info E) {
+char* get_string(int msgType, Elev_info E) {
 
 char *msg = (char*) malloc(10 * sizeof(int));
 
@@ -327,9 +332,7 @@ int test_mode(Elev_info *this_elevator) {
   return 0;
 }
 
-
-int elev_hold_door_open()
-{
+int elev_hold_door_open() {
   int floor;
 
   if((floor = elev_get_floor_sensor_signal()) == -1) {
@@ -359,7 +362,6 @@ void elev_init(void) {
     elev_set_floor_indicator(0);
 }
 
-
 void elev_set_motor_direction(elev_motor_direction_t dirn) {
     if (dirn == 0){
         io_write_analog(MOTOR, 0);
@@ -385,7 +387,6 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
     }
 }
 
-
 void elev_set_floor_indicator(int floor) {
     //assert(floor >= 0);
     //assert(floor < N_FLOORS);
@@ -404,7 +405,6 @@ void elev_set_floor_indicator(int floor) {
     }
 }
 
-
 void elev_set_door_open_lamp(int value) {
     if (value) {
         io_set_bit(LIGHT_DOOR_OPEN);
@@ -413,7 +413,6 @@ void elev_set_door_open_lamp(int value) {
     }
 }
 
-
 void elev_set_stop_lamp(int value) {
     if (value) {
         io_set_bit(LIGHT_STOP);
@@ -421,8 +420,6 @@ void elev_set_stop_lamp(int value) {
         io_clear_bit(LIGHT_STOP);
     }
 }
-
-
 
 int elev_get_button_signal(elev_button_type_t button, int floor) {
     assert(floor >= 0);
@@ -438,7 +435,6 @@ int elev_get_button_signal(elev_button_type_t button, int floor) {
     }
 }
 
-
 int elev_get_floor_sensor_signal(void) {
     if (io_read_bit(SENSOR_FLOOR1)) {
         return 1;
@@ -453,11 +449,9 @@ int elev_get_floor_sensor_signal(void) {
     }
 }
 
-
 int elev_get_stop_signal(void) {
     return io_read_bit(STOP);
 }
-
 
 int elev_get_obstruction_signal(void) {
     return io_read_bit(OBSTRUCTION);

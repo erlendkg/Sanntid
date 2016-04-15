@@ -12,8 +12,7 @@ void print_queue(int order_queue[MAX_QUEUE_SIZE]) {
 
 }
 
-int flush_order_queue(int order_queue[MAX_QUEUE_SIZE], size_t size_of_order_queue)
-{
+int flush_order_queue(int order_queue[MAX_QUEUE_SIZE], size_t size_of_order_queue) {
   memset(order_queue, 0, size_of_order_queue);
   return 1;
 }
