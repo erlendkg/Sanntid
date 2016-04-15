@@ -377,6 +377,7 @@ void unpack_message_to_variables(char* str, int* msgType, int* elevatorNumber, i
 void add_element_to_matrix(int matrix[N_FLOORS][2], int row, int col){
   matrix[row][col] = 1;
 }
+
 void remove_element_from_matrix(int matrix[N_FLOORS][2], int row, int col){
   matrix[row][col] = 0;
 }

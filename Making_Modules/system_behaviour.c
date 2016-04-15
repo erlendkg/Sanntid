@@ -33,6 +33,117 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
   pthread_join(button_input, NULL);
 }
 
+void* thread_listen_for_button_input_single_elevator_mode(void *this_elevator) {
+
+  int floor;
+  int i;
+  Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
+
+  while(1) {
+    for(floor=0; floor<4; floor++){
+
+          if (elev_get_button_signal(2, floor) == 1){
+
+            pthread_mutex_lock(&elev_info_lock);
+            cast_this_elevator->button_floor = (floor );
+            cast_this_elevator->button_type = 2;
+            cast_this_elevator->button_click = 1;
+            for (i = 0; i < 10; i++) {
+              if(cast_this_elevator->desired_floor[i] == floor){
+                break;
+              }
+              else if(cast_this_elevator->desired_floor[i] == 0) {
+                insert_item(cast_this_elevator->desired_floor, i, cast_this_elevator->button_click);
+                pthread_mutex_unlock(&elev_info_lock);
+                sleep(1);
+                break;
+            }
+          }
+        }
+        if (elev_get_button_signal(1, floor) == 1){
+
+            pthread_mutex_lock(&elev_info_lock);
+            cast_this_elevator->button_floor = (floor );
+            cast_this_elevator->button_type = 1;
+            cast_this_elevator->button_click = 1;
+            for (i = 0; i < 10; i++) {
+              if(cast_this_elevator->desired_floor[i] == floor){
+                break;
+              }
+              if(cast_this_elevator->desired_floor[i] == 0) {
+                insert_item(cast_this_elevator->desired_floor, i, cast_this_elevator->button_click);
+                pthread_mutex_unlock(&elev_info_lock);
+                sleep(1);
+                break;
+
+            }
+          }
+        }
+        if (elev_get_button_signal(0, floor) == 1){
+
+          pthread_mutex_lock(&elev_info_lock);
+          cast_this_elevator->button_floor = (floor );
+          cast_this_elevator->button_type = 0;
+          cast_this_elevator->button_click = 1;
+          for (i = 0; i < 10; i++) {
+            if(cast_this_elevator->desired_floor[i] == floor){
+              break;
+            }
+            if(cast_this_elevator->desired_floor[i] == 0) {
+              insert_item(cast_this_elevator->desired_floor, i, cast_this_elevator->button_click);
+              pthread_mutex_unlock(&elev_info_lock);
+              sleep(1);
+              break;
+
+          }
+        }
+      }
+    }
+  }
+}
+
+void* thread_carry_out_orders_single_elevator_mode(void *this_elevator) {
+
+  int i;
+  Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
+
+  while(1) {
+    if(cast_this_elevator->is_busy == 0) {
+      cast_this_elevator->is_busy = 1;
+      for(i = 0; i < 10; i++) {
+        if(cast_this_elevator->desired_floor[i] != 0){
+          go_to_floor(cast_this_elevator->desired_floor[i]);
+          pthread_mutex_lock(&elev_info_lock);
+          remove_item_from_queue(cast_this_elevator->desired_floor);
+          pthread_mutex_unlock(&elev_info_lock);
+          hold_doors_open(1);
+        }
+      }
+      cast_this_elevator->is_busy = 0;
+    }
+  }
+  return NULL;
+}
+
+
+void addButtonLightsToQueue(int lamp_matrix[4][2], int elevator_queue){
+
+  int matrix_row_counter, matrix_column_counter, queue_counter;
+  for (matrix_row_counter = 0; matrix_row_counter < N_FLOORS; matrix_row_counter++){
+    for (matrix_column_counter = 0; matrix_column_counter < 2; matrix_column_counter++){
+      for (queueCounter = 0; queueCounter < 10; queueCounter++){
+        if(lamp_matrix[matrix_row_counter][matrix_column_counter] == elevator_queue[queueCounter]){
+          break;
+        }
+        else if(elevator_queue[queueCounter] == 0) {
+          insert_item(, i, cast_this_elevator->button_click);
+          break;
+      }
+  }
+}
+
+}
+
 void network_elevator_mode(Elev_info *this_elevator, char const *server_ip) {
   this_elevator->is_connected_to_network = 1;
   pthread_t button_input, main_client, message_to_master;
@@ -95,6 +206,7 @@ int main_client(char const *server_ip) {
 
   }
 
+
 void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
   int message_type, b, c, new_desired_floor, light_status;
@@ -146,33 +258,6 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
   }
 }
 //Gi main client og main server bedre navn
-void* thread_carry_out_orders_single_elevator_mode(void *this_elevator) {
-
-    int i;
-    Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
-
-    while(1) {
-      if(cast_this_elevator->is_busy == 0) {
-        cast_this_elevator->is_busy = 1;
-        for(i = 0; i < 10; i++) {
-          if(cast_this_elevator->desired_floor[i] != 0){
-            go_to_floor(cast_this_elevator->desired_floor[i]);
-            pthread_mutex_lock(&elev_info_lock);
-            cast_this_elevator->desired_floor[i] = 0;
-            pthread_mutex_unlock(&elev_info_lock);
-            hold_doors_open(1);
-          }
-          if(cast_this_elevator->desired_floor[i] == cast_this_elevator->current_floor) {
-            pthread_mutex_lock(&elev_info_lock);
-            cast_this_elevator->desired_floor[i] = 0;
-            pthread_mutex_unlock(&elev_info_lock);
-          }
-      }
-      cast_this_elevator->is_busy = 0;
-    }
-  }
-  return NULL;
-}
 
 void* thread_carry_out_orders_network_mode(void *this_elevator){
 
@@ -192,64 +277,6 @@ void* thread_carry_out_orders_network_mode(void *this_elevator){
       return NULL;
 
 }
-
-void* thread_listen_for_button_input_single_elevator_mode(void *this_elevator) {
-  int floor;
-  int i;
-  Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
-
-  while(1) {
-    for(floor=0; floor<4; floor++){
-      if (elev_get_button_signal(2, floor) == 1){
-          pthread_mutex_lock(&elev_info_lock);
-          //printf("Floor %d, Inside\n", (floor+1));
-          cast_this_elevator->button_floor = (floor +1);
-          cast_this_elevator->button_type = 2;
-          cast_this_elevator->button_click = 1;
-          for (i = 0; i < 10; i++) {
-            if(cast_this_elevator->desired_floor[i] == 0) {
-              cast_this_elevator->desired_floor[i] = (floor+1);
-              pthread_mutex_unlock(&elev_info_lock);
-              sleep(1);
-              break;
-            }
-          }
-
-      }
-      if (elev_get_button_signal(1, floor) == 1){
-          pthread_mutex_lock(&elev_info_lock);
-          //printf("Floor %d, Down\n", (floor+1));
-          cast_this_elevator->button_floor = (floor +1);
-          cast_this_elevator->button_type = 1;
-          cast_this_elevator->button_click = 1;
-          for (i = 0; i < 10; i++) {
-            if(cast_this_elevator->desired_floor[i] == 0) {
-              cast_this_elevator->desired_floor[i] = (floor+1);
-              pthread_mutex_unlock(&elev_info_lock);
-              sleep(1);
-              break;
-            }
-          }
-
-      }
-      if (elev_get_button_signal(0, floor) == 1){
-          pthread_mutex_lock(&elev_info_lock);
-          //printf("Floor %d, Up\n", (floor+1));
-          cast_this_elevator->button_floor = (floor +1);
-          cast_this_elevator->button_type = 0;
-          cast_this_elevator->button_click = 1;
-          for (i = 0; i < 10; i++) {
-            if(cast_this_elevator->desired_floor[i] == 0) {
-              cast_this_elevator->desired_floor[i] = (floor+1);
-              pthread_mutex_unlock(&elev_info_lock);
-              sleep(1);
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
 
 void* thread_listen_for_button_input_and_send_to_master(void *this_elevator) {
 
