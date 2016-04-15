@@ -3,6 +3,8 @@
 pthread_mutex_t net_stat_lock;
 pthread_mutex_t elev_info_lock;
 pthread_mutex_t door_open_lock;
+int lamp_matrix[N_FLOORS][2];
+
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
   int i;
@@ -60,6 +62,8 @@ void network_elevator_mode(Elev_info *this_elevator, char const *server_ip) {
 int main_client(char const *server_ip) {
   int server_socket;
   Elev_info *this_elevator = malloc(sizeof(Elev_info));
+  initialize_lamp_matrix(lamp_matrix);
+  update_panel_lights(lamp_matrix);
 
   pthread_mutex_init(&elev_info_lock, NULL);
   pthread_mutex_init(&door_open_lock, NULL);
@@ -74,7 +78,7 @@ int main_client(char const *server_ip) {
 
 
   while(1) {
-
+    update_panel_lights(lamp_matrix);
     if ((this_elevator->is_connected_to_network) == 0) {
       printf("No network connection could be established\n");
       printf("Currently Running in single elevator mode\n");
@@ -140,7 +144,9 @@ void* thread_recieve_orders_and_operate_elevator(void *this_elevator) {
         printf("Going to floor %d\n", my_this_elevator->desired_floor[0]);
       }
       if(message_type == 3) {
-        update_button_lights(c, new_desired_floor, light_status);
+        initialize_lamp_matrix(lamp_matrix);
+        unbundle_lamp_matrix(buffer, lamp_matrix);
+        update_panel_lights(lamp_matrix);
       }
     }
   }
@@ -187,6 +193,7 @@ void* thread_carry_out_orders_network_mode(void *this_elevator){
       printf("kom ut\n");
       pthread_mutex_unlock(&door_open_lock);
       printf("lukker døren\n");
+
 
       }
       return NULL;
@@ -258,6 +265,7 @@ void* thread_listen_for_button_input_and_send_to_master(void *this_elevator) {
     char messageToMaster[512];
     clock_t start_t0 ,start_t1, start_t2, stop_t0, stop_t1, stop_t2;
     double dt0, dt1, dt2;
+    int val;
 
     start_t0 = clock();
     start_t1 = clock();
@@ -279,8 +287,9 @@ void* thread_listen_for_button_input_and_send_to_master(void *this_elevator) {
               sprintf(messageToMaster, "<2E%dBT2F%d>", cast_this_elevator->num, (floor +1));
             	printf("SEND to master: %s\n", messageToMaster);
 
-              send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
 
+              val = send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+              printf("Bytes sent: %d\n", val);
               memset(messageToMaster, 0, sizeof(messageToMaster));
 
         }
@@ -298,8 +307,14 @@ void* thread_listen_for_button_input_and_send_to_master(void *this_elevator) {
             sprintf(messageToMaster, "<2E%dBT1F%d>", cast_this_elevator->num, (floor +1));
             printf("SEND to master: %s\n", messageToMaster);
 
-            send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+            val = send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+            printf("Bytes sent: %d\n", val);
+            update_lamp_matrix(lamp_matrix, floor, 1,1);
 
+            memset(messageToMaster, 0, sizeof(messageToMaster));
+            bundle_lamp_matrix(messageToMaster, lamp_matrix);
+            val = send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster),0);
+            printf("Lamp matrix sent to master. Bytes = %d\n", val);
             memset(messageToMaster, 0, sizeof(messageToMaster));
 
         }
@@ -315,10 +330,16 @@ void* thread_listen_for_button_input_and_send_to_master(void *this_elevator) {
 
             sprintf(messageToMaster, "<2E%dBT0F%d>", cast_this_elevator->num, (floor +1));
             printf("SEND to master: %s\n", messageToMaster);
+            update_lamp_matrix(lamp_matrix, floor, 0,1);
 
-            send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
-
+            val = send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster), 0);
+            printf("Bytes sent: %d\n", val);
             memset(messageToMaster, 0, sizeof(messageToMaster));
+            bundle_lamp_matrix(messageToMaster, lamp_matrix);
+            val = send(cast_this_elevator->server_socket, messageToMaster, sizeof(messageToMaster),0);
+            printf("Lamp matrix sent to master. Bytes = %d\n", val);
+            memset(messageToMaster, 0, sizeof(messageToMaster));
+
 
         }
        }
@@ -363,6 +384,7 @@ void* thread_send_to_master(void *this_elevator){
 int main_server() {
   Network_status *net_status = malloc(sizeof(Network_status));
   pthread_t listen_for_clients;
+  initialize_lamp_matrix(lamp_matrix);
 
   net_status->master_socket = initialize_server_socket();
   pthread_mutex_init(&net_stat_lock, NULL);

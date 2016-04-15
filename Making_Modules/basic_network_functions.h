@@ -1,3 +1,6 @@
+#ifndef BASIC_ELEVATOR_FUNCTIONS_H_DEF
+#define BASIC_ELEVATOR_FUNCTIONS_H_DEF
+
 #include <assert.h>
 #include <stdlib.h>
 
@@ -29,3 +32,5 @@ int accept_client(Network_status *net_status, int *new_socket_pointer);
 int read_message_from_client(int client_sockets, char* buf);
 int send_all(int recipient_socket, char *buf, int *len);
 int listen_for_message_from_master(char *buffer, int master_socket, int buffer_size); //returns -1 if master disconnects
+
+#endif
