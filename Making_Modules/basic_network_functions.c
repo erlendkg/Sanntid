@@ -155,13 +155,16 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
   int max_sd;
   int activity;
   fd_set serverfd;
+  struct timeval tv;
+  tv.tv_sec = 10;
+  tv.tv_usec = 0;
 
   while(1) {
     FD_ZERO(&serverfd);
 
     FD_SET(master_socket, &serverfd);
     max_sd = master_socket;
-    activity = select(max_sd + 1, &serverfd, NULL, NULL, NULL);
+    activity = select(max_sd + 1, &serverfd, NULL, NULL, &tv);
 
     if(FD_ISSET(master_socket, &serverfd))
     {
@@ -173,6 +176,9 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
         printf("got message: %s", buffer);
         return 1;
       }
+    } else {
+      printf("Lost server\n");
+      return -1;
     }
   }
 }

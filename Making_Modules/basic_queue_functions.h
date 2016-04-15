@@ -35,7 +35,7 @@ void insert_item(int order_queue[QUEUE_SIZE], int pos, int num);
 int is_elevator_disabled(int status);
 int is_order_on_the_way(int current_floor, int status, int button_order);
 
-void update_elevator_struct(int order_queue[QUEUE_SIZE], int * status, int * queue_size, int current_floor);
+void update_elevator_status_and_queuesize(int order_queue[QUEUE_SIZE], int * status, int * queue_size, int current_floor);
 
 //Placing functions
 void place_order_on_the_way(int order_queue[QUEUE_SIZE], int *status, int button_order);
@@ -58,8 +58,5 @@ int assign_number_to_new_elevator( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int
 void activate_single_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int elevatorNumber);
 
 //When recieving a message from master
-char *act_on_message_from_master( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array);
-void add_element_to_matrix(int matrix[N_FLOORS][2], int row, int col);
-void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, int *buttonType, int * elevatorFloor, int* light_status);
 
 #endif

@@ -18,7 +18,7 @@ int flush_order_queue(int order_queue[QUEUE_SIZE], size_t size_of_order_queue)
     return 1;
   }
 
-void update_elevator_struct(int order_queue[QUEUE_SIZE], int * status, int * queue_size, int current_floor){
+void update_elevator_status_and_queuesize(int order_queue[QUEUE_SIZE], int * status, int * queue_size, int current_floor){
 
   if (order_queue[0] == 0){
       *status = 2;
@@ -238,7 +238,7 @@ void place_bt2_order( Elevator_data * E, int button_order){
     }
     else if (E->status == 2){
         insert_item(E->queue, 0, button_order);
-      //  update_elevator_struct(E->queue, &E->status, &E->queue_size, E->current_floor);
+      //  update_elevator_status_and_queuesize(E->queue, &E->status, &E->queue_size, E->current_floor);
     }
 }
 
@@ -273,12 +273,12 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
     //the order was not on the way for any elevators,
     if((i >= length_of_elevator_array - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
-      update_elevator_struct(E[i].queue, &E[i].status, &E[i].queue_size, E[i].current_floor);
+      //update_elevator_status_and_queuesize(E[i].queue, &E[i].status, &E[i].queue_size, E[i].current_floor);
     }
     else if((i >= length_of_elevator_array - 1) && (closest_elev == -1)){
 
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
-      update_elevator_struct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
+      //update_elevator_status_and_queuesize(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
     }
   }
 
@@ -317,12 +317,12 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
     //the order was not on the way for any elevators,
     if((i == length_of_elevator_array - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
-      update_elevator_struct(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queue_size, E[closest_elev].current_floor);
+      //update_elevator_status_and_queuesize(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queue_size, E[closest_elev].current_floor);
       }
     else if((i == length_of_elevator_array - 1) && (closest_elev == -1)){
 
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
-      update_elevator_struct(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
+      //update_elevator_status_and_queuesize(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
     }
   }
 }
@@ -344,88 +344,4 @@ void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desir
     place_bt2_order(&E[elevator], desired_floor);
 
   }
-}
-
-void unpack_message_to_variables(char* str, int* msgType, int* elevatorNumber, int* buttonType, int* elevatorFloor, int* light_status) {
-
-
-  int tempMsgType = -1, tempMsgEl = -1, tempMsgFloor = -1, tempMsgButton = -1, temp_light_status = -1;
-
-  tempMsgType = str[1] - '0';
-
-
-  if (tempMsgType == 1) {
-
-    sscanf(str, "<1E%dF%d>", &tempMsgEl, &tempMsgFloor);
-  }
-
-  else if (tempMsgType == 2) {
-
-    sscanf(str, "<2E%dBT%dF%d>", &tempMsgEl, &tempMsgButton, &tempMsgFloor);
-
-  } else if (tempMsgType == 3) {
-    sscanf(str, "<3F%dBT%dT%d>", &tempMsgEl, &tempMsgButton, &temp_light_status);
-  }
-
-  *msgType = tempMsgType;
-  *elevatorNumber = tempMsgEl;
-  *buttonType = tempMsgButton;
-  *elevatorFloor = tempMsgFloor;
-  *light_status = temp_light_status;
-}
-
-void add_element_to_matrix(int matrix[N_FLOORS][2], int row, int col){
-  matrix[row][col] = 1;
-}
-
-void remove_element_from_matrix(int matrix[N_FLOORS][2], int row, int col){
-  matrix[row][col] = 0;
-}
-
-char *act_on_message_from_master(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], char *messageFromElevator, int length_of_elevator_array){
-
-  int msgType = 0, msgElevatorNumber = 0, msgButtonType = 0, msgElevatorFloor = 0, is_elevator_on_correct_floor, light_status;
-  unpack_message_to_variables(messageFromElevator, &msgType, &msgElevatorNumber, &msgButtonType, &msgElevatorFloor, &light_status);
-
-
-  if (msgType == 1){
-
-    E[msgElevatorNumber].current_floor = msgElevatorFloor;
-    update_lamp_matrix(lamp_matrix, msgElevatorFloor, msgButtonType,0);
-
-    is_elevator_on_correct_floor = (E[msgElevatorNumber].queue[0] == msgElevatorFloor);
-
-    if (is_elevator_on_correct_floor == 1){
-
-      remove_item_from_queue(E[msgElevatorNumber].queue);
-    }
-
-    if (E[msgElevatorNumber].queue[0] == 0){
-
-      E[msgElevatorNumber].status = 2;
-      printf("oppdaterer status til 2\n");
-      return "0";
-    }
-
-    update_elevator_struct(E->queue, &E->status, &E->queue_size, E->current_floor);
-    char *newMessage = (char*) malloc(16 * sizeof(int));
-    sprintf(newMessage, "<1E%dF%d>", msgElevatorNumber, E[msgElevatorNumber].queue[0]);
-    return newMessage;
-
-
-  } else if (msgType == 2) {
-      add_new_order_to_queue(E, msgElevatorFloor, msgButtonType, msgElevatorNumber, length_of_elevator_array);
-
-      if(msgButtonType != 2){
-        unbundle_lamp_matrix(lamp_matrix, messageFromElevator);
-        update_lamp_matrix(lamp_matrix, msgElevatorFloor, msgButtonType, 1);
-      }
-      return "2";
-  }  else {
-  //  //pthread_mutex_unlock(&lock);
-
-    //HER SKAL VI SENDE SAMME ORDRE PÅ NYTT
-    return "fault";
-  }
-  return "error";
 }

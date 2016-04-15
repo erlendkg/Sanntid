@@ -9,7 +9,7 @@ LDFLAGS += -lcomedi -lm -lpthread
 
 # list of sources
 
-ELEVSRC = panel_lights.c basic_light_functions.c basic_network_functions.c basic_elevator_functions.c elev.c io.c system_behaviour.c basic_queue_functions.c main.c
+ELEVSRC = message_handling.c panel_lights.c basic_light_functions.c basic_network_functions.c basic_elevator_functions.c elev.c io.c system_behaviour.c basic_queue_functions.c main.c
 
 # program executable file name.
 TARGET = elevator

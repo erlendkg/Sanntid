@@ -1,5 +1,6 @@
 #include "panel_lights.h"
-
+#include "system_behaviour.h"
+#include "message_handling.h"
 
 
 int main(int argc, char const *argv[]) {
@@ -14,6 +15,7 @@ int main(int argc, char const *argv[]) {
   }
 
   if(atoi(argv[1]) == 2) {
+
     if(argc != 3) {
       printf("Please input server ip adress\n");
       exit(1);
