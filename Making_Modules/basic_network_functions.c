@@ -165,15 +165,13 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
     FD_SET(master_socket, &serverfd);
     max_sd = master_socket;
     activity = select(max_sd + 1, &serverfd, NULL, NULL, &tv);
-
+    memset(buffer, 0, 512);
     if(FD_ISSET(master_socket, &serverfd))
     {
       valread = recv(master_socket, buffer, buffer_size, 0);
       if(valread == 0) {
-        //printf("Lost Server\n");
         return -1;
       } else {
-        //printf("got message: %s", buffer);
         return 1;
       }
     } else {

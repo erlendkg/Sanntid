@@ -67,7 +67,6 @@ int unbundle_lamp_matrix(char message[sizeof(int)*N_FLOORS*4], int lamp_matrix[N
   for(button_type = 0; button_type < EXTERNAL_BUTTONS; button_type++) {
     for (floor = 0; floor < N_FLOORS; floor++) {
       current_char = message[i];
-      printf("%c", current_char);
       lamp_matrix[floor][button_type] = current_char - '0';
       i++;
     }

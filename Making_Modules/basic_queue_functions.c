@@ -196,19 +196,25 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int b
   if (*status == 0 ){
 
     while(1){
-      if (button_order > order_queue[i]){
+
+      printf("Button ORder: %d, Order queue qyeye: %d, I = %d\n", button_order, order_queue[i], i);
+
+      if (i == 0){
+        printf("HESTNIGGERS her: button order: %d, plass: 0 \n", button_order);
+
+        insert_item(order_queue, 0, button_order);
+      }
+      else if (button_order > order_queue[i]){
         i--;
       }
       else if (button_order == order_queue[i]){
         break;//Order already exists, therefore nothing is done
       }
       else if (button_order < order_queue[i]){
+        printf("inserter her: button order: %d, plass: %d \n", button_order, i+1);
         insert_item(order_queue, i+1, button_order);
         *status = 0;
         break;//The new order is added in the desired positon.
-      }
-      if (i == 0){
-        insert_item(order_queue, 0, button_order);
       }
 
     }
@@ -308,7 +314,7 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
   int button_type;
 
   queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
-
+  printf("button order: %d, DF: %d, BT: %d\n", button_order, desired_floor, button_type);
 
   for(int i = 0; i < length_of_elevator_array; i++){
     //Check if the elevator is disabled, jump over it if it is.
@@ -318,6 +324,7 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
     if(E[i].status == 1 && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)){
 
       place_order_on_the_way(E[i].queue, &E[i].status, desired_floor);
+      printf("**********\nPlasserte on the way\n");
       break;
     }
     else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - desired_floor) < closeness )){
@@ -334,13 +341,13 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
     //the order was not on the way for any elevators,
     if((i == length_of_elevator_array - 1) && (closest_elev != -1)){
       insert_item(E[closest_elev].queue, 0, button_order);
-      //update_elevator_status_and_queuesize(E[closest_elev].queue, &E[closest_elev].status, &E[closest_elev].queue_size, E[closest_elev].current_floor);
+      printf("**********\nPlasserte in empty\n");
       }
     else if((i == length_of_elevator_array - 1) && (closest_elev == -1)){
-
+      printf("queue1 : %d\n", E[smallest_elev].queue[0]);
       place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
-      //update_elevator_status_and_queuesize(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
-    }
+      printf("**********\nPlasserte not on the way, jesus is the way\n");
+      }
   }
 }
 

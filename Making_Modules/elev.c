@@ -55,11 +55,11 @@ void elev_set_motor_direction(elev_motor_direction_t dirn) {
 }
 
 void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
-    assert(floor >= 0);
+    /*assert(floor >= 0);
     assert(floor < N_FLOORS);
     assert(button >= 0);
     assert(button < N_BUTTONS);
-
+    */
     if (value) {
         io_set_bit(lamp_channel_matrix[floor][button]);
     } else {

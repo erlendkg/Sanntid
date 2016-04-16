@@ -3,7 +3,6 @@
 int inner_button_light_switch(int floor, int value) {
   elev_set_button_lamp(BUTTON_COMMAND, floor, value);
   return 0;
-
 }
 
 int button_up_light_switch(int floor, int value) {
