@@ -173,9 +173,9 @@ void* thread_single_elevator_carry_out_orders(void *this_elevator) {
 
         if(cast_this_elevator->desired_floor[i] != 0){
           go_to_floor(cast_this_elevator->desired_floor[i]);
-          inner_button_light_switch(cast_this_elevator->desired_floor[i]-1,0);
-          update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[i]-1,0,0);
-          update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[i]-1,1,0);
+          inner_button_light_switch(cast_this_elevator->desired_floor[i],0);
+          update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[i],0,0);
+          update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[i],1,0);
           pthread_mutex_lock(&elev_info_lock);
           cast_this_elevator->desired_floor[i] = 0;
           pthread_mutex_unlock(&elev_info_lock);
@@ -254,7 +254,7 @@ void* thread_carry_out_orders_network_mode(void *this_elevator){
     if (cast_this_elevator->desired_floor[0] != cast_this_elevator->current_floor) {
 
       go_to_floor(cast_this_elevator->desired_floor[0]);
-      inner_button_light_switch(cast_this_elevator->desired_floor[0]-1,0);
+      inner_button_light_switch(cast_this_elevator->desired_floor[0],0);
 
       pthread_mutex_lock(&doors_open_lock);
       hold_doors_open(1);
