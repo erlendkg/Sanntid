@@ -1,3 +1,6 @@
+#ifndef IO_H_DEF
+#define IO_H_DEF
+
 #pragma once
 
 // Returns 0 on init failure
@@ -10,3 +13,5 @@ int io_read_bit(int channel);
 
 int io_read_analog(int channel);
 void io_write_analog(int channel, int value);
+
+#endif

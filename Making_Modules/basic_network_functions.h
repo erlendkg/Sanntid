@@ -1,5 +1,5 @@
-#ifndef BASIC_ELEVATOR_FUNCTIONS_H_DEF
-#define BASIC_ELEVATOR_FUNCTIONS_H_DEF
+#ifndef BASIC_NETWORK_FUNCTIONS_H_DEF
+#define BASIC_NETWORK_FUNCTIONS_H_DEF
 
 #include <assert.h>
 #include <stdlib.h>
@@ -17,6 +17,7 @@
 
 #define PORT "3492"
 #define MAX_NUMBER_OF_ELEVS 3
+#define MAX_MESSAGE_SIZE 512
 #define BACKLOG 10
 
 typedef struct {

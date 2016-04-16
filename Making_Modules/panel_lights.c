@@ -1,5 +1,6 @@
 #include "panel_lights.h"
 
+
 int initialize_lamp_matrix(int lamp_matrix[N_FLOORS][EXTERNAL_BUTTONS]) {
         int floor, button_type;
 
@@ -72,4 +73,50 @@ int unbundle_lamp_matrix(char message[sizeof(int)*N_FLOORS*4], int lamp_matrix[N
                 }
         }
         return 0;
+}
+
+void convert_lamp_matrix_to_orders(int lamp_matrix[N_FLOORS][EXTERNAL_BUTTONS], int elevator_queue[10]){
+
+        int matrix_row_counter, matrix_column_counter, queue_counter;
+
+        for (matrix_row_counter = 0; matrix_row_counter < N_FLOORS; matrix_row_counter++) {
+                for (matrix_column_counter = 0; matrix_column_counter < 2; matrix_column_counter++) {
+
+                        if ((matrix_row_counter == 0 && matrix_column_counter == 1) || (matrix_row_counter == N_FLOORS-1 && matrix_column_counter == 0 )) {
+                                continue;
+                        }
+                        for (queue_counter = 0; queue_counter < 10; queue_counter++) {
+                                if(lamp_matrix[matrix_row_counter][matrix_column_counter] == elevator_queue[queue_counter]) {
+                                        continue;
+                                }
+                                else if(elevator_queue[queue_counter] == 0) {
+                                        printf("stealing value from lamp[%d][%d]\n", matrix_row_counter, matrix_column_counter);
+                                        printf("inserting %d on location %d\n", matrix_row_counter + 1, queue_counter);
+                                        insert_item(elevator_queue, queue_counter, matrix_row_counter + 1);
+                                        break;
+                                }
+                        }
+                }
+        }
+        int j, k;
+        for (j = 0; j<N_FLOORS; j++) {
+                printf("\n");
+                for (k = 0; k<2; k++) {
+                        printf("|%d|", lamp_matrix[j][k]);
+                }
+        }
+        printf("\n");
+
+}
+
+void* thread_update_lights() {
+        int current_floor;
+
+        while(1) {
+                current_floor = return_current_floor();
+                update_panel_lights(lamp_matrix);
+                if(current_floor != -1) {
+                        update_floor_indicator((current_floor)-1);
+                }
+        }
 }

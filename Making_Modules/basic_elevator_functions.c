@@ -6,7 +6,23 @@ int initialize_hardware() {
         return 0;
 }
 
-int go_to_floor(int desired_floor) {
+int go_up() {
+        elev_set_motor_direction(DIRN_UP);
+        return 1;
+
+}
+
+int go_down() {
+        elev_set_motor_direction(DIRN_DOWN);
+        return 1;
+}
+
+int stop_elevator() {
+        elev_set_motor_direction(DIRN_STOP);
+        return 1;
+}
+
+int go_to_floor(int* desired_floor) {
         int current_floor;
         time_t start_time, current_time;
         double dt;
@@ -23,13 +39,13 @@ int go_to_floor(int desired_floor) {
                 }
 
                 if((current_floor = return_current_floor()) != -1) {
-                        if(current_floor < desired_floor) {
+                        if(current_floor < *desired_floor) {
                                 elev_set_motor_direction(DIRN_UP);
                         }
-                        if(current_floor > desired_floor) {
+                        if(current_floor > *desired_floor) {
                                 elev_set_motor_direction(DIRN_DOWN);
                         }
-                        if(current_floor == desired_floor) {
+                        if(current_floor == *desired_floor) {
                                 elev_set_motor_direction(DIRN_STOP);
                                 return 1;
                         }
@@ -42,7 +58,7 @@ int hold_doors_open(int duration) {
 
 
         if((floor = elev_get_floor_sensor_signal()) == -1) {
-                fprintf(stderr, "Elevator between floors\n");
+                //fprintf(stderr, "Elevator between floors\n");
                 return -1;
         }
 
@@ -60,7 +76,6 @@ int return_current_floor() {
 
 int return_button_input(Button_click *button_order) {
         int floor;
-        int input[2];
 
         while(1) {
                 for(floor = 0; floor < N_FLOORS; floor++) {

@@ -5,8 +5,8 @@
 #include "basic_elevator_functions.h"
 #include "basic_queue_functions.h"
 #include "basic_light_functions.h"
+#include "order_handling_functions.h"
 #include <pthread.h>
-
 
 typedef struct {
         int num;
@@ -26,8 +26,6 @@ int main_client(char const *server_ip);
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
 void* thread_single_elevator_button_input(void *this_elevator);
 void* thread_single_elevator_carry_out_orders(void *this_elevator);
-void addButtonLightsToQueue(int lamp_matrix[N_FLOORS][2], int elevator_queue[10]);
-
 //Client + network mode
 void network_elevator_mode(Elev_info *this_elevator, char const* server_ip);
 void* thread_network_listen_for_button(void *this_elevator);
@@ -48,8 +46,5 @@ void unpack_message_to_variables(char *str, int *msgType, int *elevatorNumber, i
 
 void* recieve_messages_from_server(void* this_elevator);
 void* thread_carry_out_orders(void* this_elevator);
-void* thread_update_lights();
-
-
 
 #endif

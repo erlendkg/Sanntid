@@ -1,5 +1,6 @@
 #include "basic_network_functions.h"
 
+//Returns the server socket
 int initialize_server_socket() {
 
         int rv, server_socket;
@@ -42,6 +43,7 @@ int initialize_server_socket() {
         return server_socket;
 }
 
+//Returns the client socket
 int initialize_client_socket(char const* server_ip) {
 
         int client_socket;
@@ -165,7 +167,7 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
                 FD_SET(master_socket, &serverfd);
                 max_sd = master_socket;
                 activity = select(max_sd + 1, &serverfd, NULL, NULL, &tv);
-                memset(buffer, 0, 512);
+                memset(buffer, 0, MAX_MESSAGE_SIZE);
                 if(FD_ISSET(master_socket, &serverfd))
                 {
                         valread = recv(master_socket, buffer, buffer_size, 0);

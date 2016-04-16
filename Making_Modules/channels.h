@@ -1,3 +1,6 @@
+#ifndef CHANNELS_H_DEF
+#define CHANNELS_H_DEF
+
 #pragma once
 
 
@@ -60,3 +63,5 @@
 #define BUTTON_UP4              -1
 #define LIGHT_DOWN1             -1
 #define LIGHT_UP4               -1
+
+#endif

@@ -1,10 +1,8 @@
 #ifndef ELEV_H_DEF
 #define ELEV_H_DEF
-#define N_FLOORS 4
 
-// Number of buttons (and corresponding lamps) on a per-floor basis
+#define N_FLOORS 4
 #define N_BUTTONS 3
-#define DOOR_OPEN_TIME 1
 
 typedef enum tag_elev_motor_direction {
     DIRN_DOWN = -1,
