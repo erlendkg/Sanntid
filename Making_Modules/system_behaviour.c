@@ -1,5 +1,7 @@
 #include "system_behaviour.h"
 #include "panel_lights.h"
+#include "message_handling.h"
+
 
 pthread_mutex_t net_stat_lock;
 pthread_mutex_t elev_info_lock;
@@ -45,11 +47,20 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
 
   this_elevator->is_busy = 0;
   this_elevator->current_floor = return_current_floor();
-  this_elevator->desired_floor[0] = 1;
-
   for (i = 1; i <10; i++) {
     this_elevator->desired_floor[i] = 0;
   }
+  // this_elevator->desired_floor[0] = 1;
+
+  addButtonLightsToQueue(lamp_matrix, this_elevator->desired_floor);
+  int j, k;
+  for (j = 0; j<N_FLOORS; j++){
+    printf("\n");
+    for (k = 0; k<2; k++){
+      printf("|%d|", lamp_matrix[j][k]);
+    }
+  }
+  printf("\n");
 
   pthread_create(&carry_out_orders, NULL, thread_single_elevator_carry_out_orders, (void* ) this_elevator);
   pthread_create(&button_input, NULL, thread_single_elevator_button_input, (void* ) this_elevator);
@@ -148,10 +159,19 @@ void* thread_single_elevator_carry_out_orders(void *this_elevator) {
   int i;
   Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
 
+  int j;
+  printf("Current queue\n");
+  for (j = 0; j<10 ; j++){
+    printf("%d,",cast_this_elevator->desired_floor[j]);
+  }
+  printf("\n");
+ cast_this_elevator->is_busy = 0;
+
   while(1) {
     if(cast_this_elevator->is_busy == 0) {
       cast_this_elevator->is_busy = 1;
       for(i = 0; i < 10; i++) {
+
         if(cast_this_elevator->desired_floor[i] != 0){
           go_to_floor(cast_this_elevator->desired_floor[i]);
           inner_button_light_switch(cast_this_elevator->desired_floor[i]-1,0);
@@ -173,27 +193,43 @@ void* thread_single_elevator_carry_out_orders(void *this_elevator) {
 void addButtonLightsToQueue(int lamp_matrix[N_FLOORS][2], int elevator_queue[10]){
 
   int matrix_row_counter, matrix_column_counter, queue_counter;
+
   for (matrix_row_counter = 0; matrix_row_counter < N_FLOORS; matrix_row_counter++){
     for (matrix_column_counter = 0; matrix_column_counter < 2; matrix_column_counter++){
+
+      if ((matrix_row_counter == 0 && matrix_column_counter == 1) || (matrix_row_counter == N_FLOORS-1 && matrix_column_counter == 0 )){
+          continue;
+      }
       for (queue_counter = 0; queue_counter < 10; queue_counter++){
         if(lamp_matrix[matrix_row_counter][matrix_column_counter] == elevator_queue[queue_counter]){
-          break;
+          continue;
         }
         else if(elevator_queue[queue_counter] == 0) {
-          insert_item(elevator_queue, queue_counter, lamp_matrix[matrix_row_counter][matrix_column_counter]);
+          printf("stealing value from lamp[%d][%d]\n", matrix_row_counter, matrix_column_counter);
+          printf("inserting %d on location %d\n", matrix_row_counter + 1, queue_counter);
+          insert_item(elevator_queue, queue_counter, matrix_row_counter + 1);
           break;
         }
       }
     }
   }
+  int j, k;
+  for (j = 0; j<N_FLOORS; j++){
+    printf("\n");
+    for (k = 0; k<2; k++){
+      printf("|%d|", lamp_matrix[j][k]);
+    }
+  }
+  printf("\n");
+
 }
 
 void network_elevator_mode(Elev_info *this_elevator, char const *server_ip) {
   this_elevator->is_connected_to_network = 1;
-  pthread_t button_input, main_client, message_to_master, orders, lights;
+  pthread_t button_input, main_client, orders, lights;
   int server_socket = this_elevator->server_socket;
 
-  this_elevator->desired_floor[0] = 1;
+  // this_elevator->desired_floor[0] = 1;
 
   pthread_create(&main_client, NULL, recieve_messages_from_server, (void*) this_elevator);
   pthread_create(&button_input, NULL, thread_network_listen_for_button, (void*) this_elevator);
@@ -455,6 +491,26 @@ void* thread_send_orders_to_idle_elevators(void* elevatorInfo){
 
         if (myElevatorInfo[i].status == 2 && myElevatorInfo[i].queue[0] != 0) {
           create_and_send_message(myElevatorInfo[i], i);
+          printf("elevators currentfloor: %d\n", myElevatorInfo[i].current_floor);
+          printf("elevators next queue: %d\n\n", myElevatorInfo[i].queue[0]);
+          // update_elevator_status_and_queuesize(myElevatorInfo[i].queue[0], &myElevatorInfo[i].status, &myElevatorInfo[i].queue_size, myElevatorInfo[i].current_floor);
+
+          int queue_instance = myElevatorInfo[i].queue[0];
+          int floor_in_queue = 0;
+
+          while(queue_instance >= 10) {
+            floor_in_queue++;
+            queue_instance -= 10;
+          }
+
+          if (myElevatorInfo[i].current_floor > floor_in_queue){
+
+              myElevatorInfo[i].status = 1;
+          }
+          else if (myElevatorInfo[i].current_floor < floor_in_queue){
+              myElevatorInfo[i].status = 0;
+          }
+
         }
         bundle_lamp_matrix(messageToElevator,lamp_matrix);
         send(myElevatorInfo[i].socket, messageToElevator, sizeof(messageToElevator),0);
@@ -541,19 +597,19 @@ void* recieve_messages_from_server(void* this_elevator) {
   }
 
   my_this_elevator->num = elevator_id;
-  printf("My number is %d", elevator_id);
+  printf("My number is %d\n\n", elevator_id);
   memset(message,0,512);
 
   while(1) {
-    send(my_this_elevator->server_socket, "Alive",5,0);
+    // send(my_this_elevator->server_socket, "Alive",5,0);
 
     if (listen_for_message_from_master(message, my_this_elevator->server_socket, 512) == -1){
       printf("Disconnected from master\n");
       return NULL;
     } else {
-      printf("*****************************\n");
-      printf("Message from master: %s\n", message);
-      printf("*****************************\n\n");
+      // printf("*****************************\n");
+      // printf("Message from master: %s\n", message);
+      // printf("*****************************\n\n");
 
       if((message[0] - '0')  == 3) {
         initialize_lamp_matrix(lamp_matrix);
@@ -588,7 +644,11 @@ void* thread_carry_out_orders(void* this_elevator) {
 
   while(1) {
     if((my_this_elevator->desired_floor[0] != my_this_elevator->current_floor) && (my_this_elevator->desired_floor[0] != 0)) {
-      go_to_floor(my_this_elevator->desired_floor[0]);
+      //spawn timer Threads
+      if(go_to_floor(my_this_elevator->desired_floor[0]) == -1) {
+        printf("Hardware error, shutting down\n");
+        exit(1);
+      }
       inner_button_light_switch(my_this_elevator->desired_floor[0]-1,0);
 
       pthread_mutex_lock(&doors_open_lock);
@@ -616,8 +676,8 @@ void* thread_update_lights() {
 }
 
 //Old Threads
-/*
-void* thread_send_to_master(void *this_elevator){
+  /*
+  void* thread_send_to_master(void *this_elevator){
     Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
 
     char message[512];

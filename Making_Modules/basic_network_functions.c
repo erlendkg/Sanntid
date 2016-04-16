@@ -173,7 +173,7 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
         //printf("Lost Server\n");
         return -1;
       } else {
-        printf("got message: %s", buffer);
+        //printf("got message: %s", buffer);
         return 1;
       }
     } else {

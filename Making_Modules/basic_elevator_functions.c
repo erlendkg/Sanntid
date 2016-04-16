@@ -8,9 +8,20 @@ int initialize_hardware() {
 
 int go_to_floor(int desired_floor) {
   int current_floor;
+  time_t start_time, current_time;
+  double dt;
+
+  start_time = clock();
 
 
   while(1) {
+    current_time = clock();
+    dt = (current_time - start_time)/(CLOCKS_PER_SEC*2);
+
+    if(dt > N_FLOORS*5) {
+      return -1;
+    }
+
     if((current_floor = return_current_floor()) != -1) {
       if(current_floor < desired_floor){
         elev_set_motor_direction(DIRN_UP);
@@ -29,7 +40,6 @@ int go_to_floor(int desired_floor) {
 int hold_doors_open(int duration) {
   int floor;
 
-  printf("kom inn\n");
 
   if((floor = elev_get_floor_sensor_signal()) == -1) {
     fprintf(stderr, "Elevator between floors\n");
@@ -37,9 +47,7 @@ int hold_doors_open(int duration) {
   }
 
   elev_set_door_open_lamp(1);
-  printf("sover i et sec\n");
   sleep(duration);
-  printf("ferdig med det ass\n");
   elev_set_door_open_lamp(0);
   return 1;
 }

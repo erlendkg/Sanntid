@@ -12,22 +12,31 @@ void print_queue(int order_queue[QUEUE_SIZE]) {
 
 }
 
-int flush_order_queue(int order_queue[QUEUE_SIZE], size_t size_of_order_queue)
-  {
+int flush_order_queue(int order_queue[QUEUE_SIZE], size_t size_of_order_queue) {
     memset(order_queue, 0, size_of_order_queue);
     return 1;
   }
 
 void update_elevator_status_and_queuesize(int order_queue[QUEUE_SIZE], int * status, int * queue_size, int current_floor){
 
-  if (order_queue[0] == 0){
+
+  int queue_instance = order_queue[0];
+  int floor_in_queue = 0;
+
+  while(queue_instance >= 10) {
+    floor_in_queue++;
+    queue_instance -= 10;
+  }
+
+
+  if (queue_instance == 0){
       *status = 2;
   }
-  else if (current_floor > order_queue[0]){
+  else if (current_floor > floor_in_queue){
 
       *status = 1;
   }
-  else if (current_floor < order_queue[0]){
+  else if (current_floor < floor_in_queue){
   *status = 0;
   }
 
@@ -142,7 +151,7 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int butto
 
   int i = 0;
 
-  if (*status == 0){
+  if (*status == 0 ){
 
     while(1){
 
@@ -184,7 +193,7 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int b
 
   int i = QUEUE_SIZE-1;
 
-  if (*status == 0){
+  if (*status == 0 ){
 
     while(1){
       if (button_order > order_queue[i]){
@@ -227,7 +236,7 @@ void place_bt2_order( Elevator_data * E, int button_order){
 
   bool on_way;
 
-    if (E->status != 2){
+      if (E->status != 2){
       on_way = is_order_on_the_way(E->current_floor, E->status, button_order);
       if (on_way == 1){
         place_order_on_the_way(E->queue, &E->status, button_order);
@@ -235,10 +244,11 @@ void place_bt2_order( Elevator_data * E, int button_order){
       else if(on_way == 0){
         place_order_not_on_the_way(E->queue, &E->status, button_order);
       }
-    }
+     }
     else if (E->status == 2){
+
         insert_item(E->queue, 0, button_order);
-      //  update_elevator_status_and_queuesize(E->queue, &E->status, &E->queue_size, E->current_floor);
+       //update_elevator_status_and_queuesize(E->queue, &E->status, &E->queue_size, E->current_floor);
     }
 }
 

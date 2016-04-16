@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 
 typedef struct {
   int button_floor;

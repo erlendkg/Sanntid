@@ -26,6 +26,7 @@ int main_client(char const *server_ip);
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip);
 void* thread_single_elevator_button_input(void *this_elevator);
 void* thread_single_elevator_carry_out_orders(void *this_elevator);
+void addButtonLightsToQueue(int lamp_matrix[N_FLOORS][2], int elevator_queue[10]);
 
 //Client + network mode
 void network_elevator_mode(Elev_info *this_elevator, char const* server_ip);
