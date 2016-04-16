@@ -4,7 +4,6 @@
 
 // Number of buttons (and corresponding lamps) on a per-floor basis
 #define N_BUTTONS 3
-
 #define DOOR_OPEN_TIME 1
 
 typedef enum tag_elev_motor_direction {

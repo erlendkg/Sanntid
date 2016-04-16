@@ -7,7 +7,7 @@ pthread_mutex_t net_stat_lock;
 pthread_mutex_t elev_info_lock;
 pthread_mutex_t send_message_lock;
 pthread_mutex_t doors_open_lock;
-int lamp_matrix[N_FLOORS][2];
+int lamp_matrix[N_FLOORS][EXTERNAL_BUTTONS];
 
 int main_client(char const *server_ip) {
   int server_socket;
@@ -32,7 +32,6 @@ int main_client(char const *server_ip) {
       printf("Network connection established\n");
       printf("Switching to network mode\n");
       }
-
     if (this_elevator->is_connected_to_network == 1) {
         printf("Elevator is now i network mode");
         network_elevator_mode(this_elevator, server_ip);
@@ -190,7 +189,7 @@ void* thread_single_elevator_carry_out_orders(void *this_elevator) {
   return NULL;
 }
 
-void addButtonLightsToQueue(int lamp_matrix[N_FLOORS][2], int elevator_queue[10]){
+void addButtonLightsToQueue(int lamp_matrix[N_FLOORS][EXTERNAL_BUTTONS], int elevator_queue[10]){
 
   int matrix_row_counter, matrix_column_counter, queue_counter;
 
@@ -281,7 +280,6 @@ void* thread_network_listen_for_button(void *this_elevator) {
     start_t0 = clock();
     start_t1 = clock();
     start_t2 = clock();
-
 
     while(1) {
 
