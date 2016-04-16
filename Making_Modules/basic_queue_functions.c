@@ -1,5 +1,5 @@
 #include "basic_queue_functions.h"
-
+#include "message_handling.h"
 
 void print_queue(int order_queue[QUEUE_SIZE]) {
 
@@ -259,18 +259,23 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
   int smallest_queue = 9999;
   int smallest_elev;
 
+  int desired_floor;
+  int button_type;
+
+  queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
+
   for(int i = 0; i < length_of_elevator_array; i++){
     //Check if the elevator is disabled, jump over it if it is.
     i = i + is_elevator_disabled(E[i].status);
 
     //for every iteration, check if the order is on the way up for an elevator
-    if(E[i].status == 0 && is_order_on_the_way(E[i].current_floor, E[i].status, button_order)){
+    if(E[i].status == 0 && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)){
 
-      place_order_on_the_way(E[i].queue, &E[i].status, button_order);
+      place_order_on_the_way(E[i].queue, &E[i].status, desired_floor);
       break;
     }
-    else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - button_order) < closeness )){
-      closeness = abs(E[i].current_floor - button_order);
+    else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - desired_floor) < closeness )){
+      closeness = abs(E[i].current_floor - desired_floor);
       closest_elev = i;
     }
 
@@ -291,9 +296,6 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
       //update_elevator_status_and_queuesize(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
     }
   }
-
-
-
 }
 
 void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_order, int length_of_elevator_array){
@@ -302,19 +304,24 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
   int closeness = 9999;
   int smallest_queue = 9999;
   int smallest_elev;
+  int desired_floor;
+  int button_type;
+
+  queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
+
 
   for(int i = 0; i < length_of_elevator_array; i++){
     //Check if the elevator is disabled, jump over it if it is.
     i = i + is_elevator_disabled(E[i].status);
 
     //for every iteration, check if the order is on the way up for an elevator
-    if(E[i].status == 1 && is_order_on_the_way(E[i].current_floor, E[i].status, button_order)){
+    if(E[i].status == 1 && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)){
 
-      place_order_on_the_way(E[i].queue, &E[i].status, button_order);
+      place_order_on_the_way(E[i].queue, &E[i].status, desired_floor);
       break;
     }
-    else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - button_order) < closeness )){
-      closeness = abs(E[i].current_floor - button_order);
+    else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - desired_floor) < closeness )){
+      closeness = abs(E[i].current_floor - desired_floor);
       closest_elev = i;
     }
 
