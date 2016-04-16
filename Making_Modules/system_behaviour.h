@@ -9,15 +9,15 @@
 
 
 typedef struct {
-  int num;
-  int desired_floor[10];
-  int current_floor;
-  int is_busy;
-  int button_click;
-  int button_floor;
-  int button_type;  //0 = up, 1 = down, 2 = inside
-  int is_connected_to_network;
-  int server_socket;
+        int num;
+        int desired_floor[10];
+        int current_floor;
+        int is_busy;
+        int button_click;
+        int button_floor;
+        int button_type; //0 = up, 1 = down, 2 = inside
+        int is_connected_to_network;
+        int server_socket;
 } Elev_info;
 
 

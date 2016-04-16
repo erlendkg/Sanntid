@@ -14,13 +14,13 @@
 #define N_FLOORS 4
 
 typedef struct {
-  int queue[QUEUE_SIZE];
-  int queue_size;
-  int status; // 0 Is up, 1 is down, 2 is idle. -1 is elevator not connected
-  int current_floor;
-  int last_order;
-  int socket;
-  int length_of_elevator_array; //elev 99 contains this info
+        int queue[QUEUE_SIZE];
+        int queue_size;
+        int status; // 0 Is up, 1 is down, 2 is idle. -1 is elevator not connected
+        int current_floor;
+        int last_order;
+        int socket;
+        int length_of_elevator_array; //elev 99 contains this info
 } Elevator_data;
 
 pthread_mutex_t lock;

@@ -3,8 +3,8 @@
 #include <time.h>
 
 typedef struct {
-  int button_floor;
-  int button_type;
+        int button_floor;
+        int button_type;
 } Button_click;
 
 int initialize_hardware();

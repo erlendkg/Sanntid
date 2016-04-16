@@ -20,9 +20,9 @@
 #define BACKLOG 10
 
 typedef struct {
-  int active_connections;
-  int client_sockets[MAX_NUMBER_OF_ELEVS];
-  int master_socket;
+        int active_connections;
+        int client_sockets[MAX_NUMBER_OF_ELEVS];
+        int master_socket;
 } Network_status;
 
 int initialize_server_socket();
