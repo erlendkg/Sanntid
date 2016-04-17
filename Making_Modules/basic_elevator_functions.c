@@ -33,6 +33,7 @@ int go_to_floor(int* desired_floor) {
         while(1) {
                 current_time = clock();
                 dt = (current_time - start_time)/(CLOCKS_PER_SEC*2);
+                printf("Desired_floro: %d\n", *desired_floor);
 
                 if(dt > N_FLOORS*5) {
                         return -1;

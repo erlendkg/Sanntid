@@ -639,6 +639,7 @@ void update_elevinfo_for_message_type_1(Elevator_data E[MAX_NUMBER_OF_ELEVATORS]
         is_elevator_on_correct_floor = (floor_in_queue == msg_elevator_floor);
 
         if (is_elevator_on_correct_floor == 1) {
-                remove_item_from_queue(E[msg_elevator_number].queue);
+                int first_item_in_queue = 0;
+                remove_item_from_queue(E[msg_elevator_number].queue, first_item_in_queue);
         }
 }

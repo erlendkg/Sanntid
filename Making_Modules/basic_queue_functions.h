@@ -16,7 +16,7 @@
 void print_queue(int order_queue[QUEUE_SIZE]);
 int flush_order_queue(int order_queue[QUEUE_SIZE], size_t size_of_order_queue);
 
-void remove_item_from_queue(int order_queue[QUEUE_SIZE]);
+void remove_item_from_queue(int order_queue[QUEUE_SIZE], int item_position);
 void insert_item(int order_queue[QUEUE_SIZE], int pos, int num);
 
 #endif

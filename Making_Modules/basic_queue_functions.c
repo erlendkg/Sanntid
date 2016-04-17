@@ -17,7 +17,7 @@ int flush_order_queue(int order_queue[QUEUE_SIZE], size_t size_of_order_queue) {
         return 1;
 }
 
-void remove_item_from_queue(int order_queue[QUEUE_SIZE]){
+void remove_item_from_queue(int order_queue[QUEUE_SIZE], int item_position){
         for (int i = 0; i < QUEUE_SIZE-1; i++) {
                 order_queue[i] = order_queue[i+1];
         }

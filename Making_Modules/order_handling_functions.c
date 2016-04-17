@@ -50,7 +50,6 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
 
                 while(1) {
 
-                        printf("Button ORder: %d, Order queue qyeye: %d, I = %d\n", button_order, order_queue[i], i);
 
                         if (i == 0) {
 
@@ -74,7 +73,13 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
         if (*status == 1) {
 
                 while(1) {
-                        if (button_order < order_queue[i] || order_queue[i] == 0) {
+                        if (i == 0){
+
+                                insert_item(order_queue, 0, button_order);
+                                break;
+                        }
+
+                        else if (button_order < order_queue[i] || order_queue[i] == 0) {
                                 i--;
                         }
                         else if (button_order == order_queue[i]) {
@@ -209,7 +214,47 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
         }
 }
 
+int is_order_in_global_queue(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desired_floor){
+
+  int elevatorCounter, queueCounter;
+
+    for (elevatorCounter = 0; elevatorCounter < MAX_NUMBER_OF_ELEVATORS; elevatorCounter++){
+      for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++){
+        if (desired_floor == E[elevatorCounter].queue[queueCounter]){
+          return 1;
+        }
+      }
+    }
+  return 0;
+}
+
+int is_order_in_local_queue(Elevator_data E, int desired_floor){
+
+  int queueCounter;
+
+      for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++){
+        if (desired_floor == E.queue[queueCounter]){
+          return 1;
+        }
+    }
+  return 0;
+}
+
 void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desired_floor, int buttonType, int elevator, int length_of_elevator_array){
+
+        if (buttonType == 2) {
+          if(is_order_in_local_queue(E[elevator], desired_floor) == 1){
+
+            return;
+          }
+          place_bt2_order(&E[elevator], desired_floor);
+
+        }
+
+        if(is_order_in_global_queue(E, desired_floor) == 1){
+
+          return;
+        }
 
         if (buttonType == 0) {
 
@@ -219,11 +264,6 @@ void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desir
         else if (buttonType == 1) {
 
                 place_bt1_order(E, desired_floor, length_of_elevator_array);
-
-        }
-        else if (buttonType == 2) {
-
-                place_bt2_order(&E[elevator], desired_floor);
 
         }
 }

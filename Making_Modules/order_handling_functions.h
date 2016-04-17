@@ -23,6 +23,7 @@ void place_bt2_order( Elevator_data * E, int button_order);
 void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_order, int length_of_elevator_array);
 void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_order, int length_of_elevator_array);
 
+int is_order_in_queue(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desired_floor);
 void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desired_floor, int buttonType, int elevator, int length_of_elevator_array);
 
 int assign_number_to_new_elevator( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int numberOfElevators);
