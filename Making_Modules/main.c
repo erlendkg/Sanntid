@@ -1,8 +1,5 @@
-#include "panel_lights.h"
-#include "system_behaviour.h"
-#include "message_handling.h"
-
-
+#include "client_functions.h"
+#include "master_functions.h"
 
 int main(int argc, char const *argv[]) {
 

@@ -8,35 +8,17 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desir
 
                 while(1) {
 
-                                      if (button_order == order_queue[i]) {
-                            break;//Order already exists, therefore nothing is done
-                    }
-                    else if ((button_order < order_queue[i]) || (i > 0 && order_queue[i] < order_queue[i-1])) { //the latter secures that data is stored if desired_floor is larger than the largest value in the queue.
-                            insert_item(order_queue, i, button_order);
-                            *status = 0;
-                            break;//The new order is added in the desired positon.
-                    }
-                    else if (button_order > order_queue[i]) {
-                            i++;
-                    }
-                        // if (button_order == order_queue[i]) {
-                        //         break;//Order already exists, therefore nothing is done
-                        // }
-                        // else if (i == 0){
-                        //   insert_item(order_queue, i+1, button_order);
-                        //
-                        //   *status = 0;
-                        //   break;
-                        // }
-                        // else if ((button_order < order_queue[i]) || (i > 0 && (order_queue[i] < order_queue[i-1]))) { //the latter secures that data is stored if desired_floor is larger than the largest value in the queue.
-                        //         insert_item(order_queue, i, button_order);
-                        //
-                        //         *status = 0;
-                        //         break;//The new order is added in the desired positon.
-                        // }
-                        // else if (button_order > order_queue[i]) {
-                        //         i++;
-                        // }
+                        if (desired_floor == order_queue[i]) {
+                                break;//Order already exists, therefore nothing is done
+                        }
+                        else if ((desired_floor < order_queue[i]) || (i > 0 && order_queue[i] < order_queue[i-1])) { //the latter secures that data is stored if desired_floor is larger than the largest value in the queue.
+                                insert_item(order_queue, i, button_order);
+                                *status = 0;
+                                break;//The new order is added in the desired positon.
+                        }
+                        else if (desired_floor > order_queue[i]) {
+                                i++;
+                        }
 
                 }
         }
@@ -44,29 +26,17 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desir
 
                 while(1) {
 
-
-                  if (button_order == order_queue[i]) {
-      break;//Order already exists, therefore nothing is done
-}
-else if ((button_order > order_queue[i])||(i > 0 && order_queue[i] > order_queue[i-1])) {
-      insert_item(order_queue, i, button_order);
-      *status = 1;
-      break;//The new order is added in the desired positon.
-}
-else if (button_order < order_queue[i]) {
-      i++;
-}
-                        // if (button_order == order_queue[i]) {
-                        //         break;//Order already exists, therefore nothing is done
-                        // }
-                        // else if ((button_order > order_queue[i])||(i > 0 && order_queue[i] > order_queue[i-1])) {
-                        //         insert_item(order_queue, i, button_order);
-                        //         *status = 1;
-                        //         break;//The new order is added in the desired positon.
-                        // }
-                        // else if (button_order < order_queue[i]) {
-                        //         i++;
-                        // }
+                        if (button_order == order_queue[i]) {
+                                break;//Order already exists, therefore nothing is done
+                        }
+                        else if ((button_order > order_queue[i])||(i > 0 && order_queue[i] > order_queue[i-1])) {
+                                insert_item(order_queue, i, button_order);
+                                *status = 1;
+                                break;//The new order is added in the desired positon.
+                        }
+                        else if (button_order < order_queue[i]) {
+                                i++;
+                        }
 
                 }
         }
@@ -75,28 +45,27 @@ else if (button_order < order_queue[i]) {
 void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desired_floor, int button_order){
 
         int i = QUEUE_SIZE-1;
-
+        printf("is not on the way\n");
         if (*status == GOING_UP ) {
 
                 while(1) {
 
+                        if (i == 0) {
 
-                        if (button_order > order_queue[i]) {
+                                insert_item(order_queue, 0, button_order);
+                                break;
+                        }
+                        else if (desired_floor > order_queue[i]) {
                                 i--;
                         }
-                        if (button_order == order_queue[i]) {
+                        else if (desired_floor == order_queue[i]) {
                                 break;//Order already exists, therefore nothing is done
                         }
-                        else if (button_order < order_queue[i]) {
+                        else if (order_queue[i] != 0) {
                                 insert_item(order_queue, i+1, button_order);
                                 *status = GOING_UP;
                                 break;//The new order is added in the desired positon.
                         }
-                        else if (i == 0) {
-
-                                insert_item(order_queue, 0, button_order);
-                                break;
-                              }
 
                 }
         }
@@ -104,21 +73,21 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
 
                 while(1) {
 
-                        if (button_order < order_queue[i] || order_queue[i] == 0) {
-                                i--;
-                        }
-
-                        if (button_order == order_queue[i]) {
-                                break;
-                        }
-                        else if ((button_order > order_queue[i]) && (order_queue[i] != 0)) {
-                                insert_item(order_queue, i+1, button_order);
-                                *status = GOING_DOWN;
-                                break;
-                        }
-                        else if (i == 0) {
+                        if (i == 0){
 
                                 insert_item(order_queue, 0, button_order);
+                                break;
+                        }
+
+                        else if (button_order < order_queue[i] || order_queue[i] == 0) {
+                                i--;
+                        }
+                        else if (button_order == order_queue[i]) {
+                                break;
+                        }
+                        else if (order_queue[i] != 0) {
+                                insert_item(order_queue, i+1, button_order);
+                                *status = GOING_DOWN;
                                 break;
                         }
                 }
@@ -138,7 +107,6 @@ void place_bt2_order( Elevator_master_information * E, int button_order){
 
                 on_way = is_order_on_the_way(E->current_floor, E->status, desired_floor);
                 if (on_way == 1) {
-                  printf("is on way\n");
                         place_order_on_the_way(E->queue, &E->status, desired_floor, button_order);
                 }
                 else if(on_way == 0) {
