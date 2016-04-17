@@ -1,7 +1,7 @@
 #include "client_functions.h"
 
 int main_client(char const *server_ip) {
-        int server_socket;
+        int server_socket, initial_floor = 1;
         Elevator_client_information *this_elevator = malloc(sizeof(Elevator_client_information));
         pthread_mutex_init(&elevator_client_information_lock, NULL);
         pthread_mutex_init(&send_message_lock, NULL);
@@ -10,6 +10,7 @@ int main_client(char const *server_ip) {
         initialize_lamp_matrix(lamp_matrix);
         initialize_hardware();
         update_panel_lights(lamp_matrix);
+        go_to_floor(&initial_floor);
 
         this_elevator->is_busy = 0;
         this_elevator->is_connected_to_network = 0;
@@ -194,6 +195,11 @@ void* recieve_messages_from_server(void* this_elevator) {
         printf("My number is %d\n\n", elevator_id);
         memset(message,0,sizeof(message));
 
+        my_this_elevator->current_floor = return_current_floor();
+        sprintf(message, "<1E%dF%d>", my_this_elevator->num, my_this_elevator->current_floor);
+        send(my_this_elevator->server_socket, message, MAX_MESSAGE_SIZE, 0);
+        memset(message,0,sizeof(message));
+
         start = clock();
 
         while(1) {
@@ -222,6 +228,7 @@ void* recieve_messages_from_server(void* this_elevator) {
 
                                 if(new_desired_floor != my_this_elevator->desired_floor[0]) {
                                         my_this_elevator->desired_floor[0] = new_desired_floor;
+                                        printf("new desired floor %d\n", new_desired_floor);
 
                                 } else if(new_desired_floor == my_this_elevator->current_floor) {
 

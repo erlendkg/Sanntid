@@ -1,6 +1,6 @@
 #include "order_handling_functions.h"
 
-void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desired_floor, int button_order){
+void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int button_order){
 
         int i = 0;
 
@@ -8,36 +8,17 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desir
 
                 while(1) {
 
-                                      if (button_order == order_queue[i]) {
-                            break;//Order already exists, therefore nothing is done
-                    }
-                    else if ((button_order < order_queue[i]) || (i > 0 && order_queue[i] < order_queue[i-1])) { //the latter secures that data is stored if desired_floor is larger than the largest value in the queue.
-                            insert_item(order_queue, i, button_order);
-                            *status = 0;
-                            break;//The new order is added in the desired positon.
-                    }
-                    else if (button_order > order_queue[i]) {
-                            i++;
-                    }
-                        // if (button_order == order_queue[i]) {
-                        //         break;//Order already exists, therefore nothing is done
-                        // }
-                        // else if (i == 0){
-                        //   insert_item(order_queue, i+1, button_order);
-                        //
-                        //   *status = 0;
-                        //   break;
-                        // }
-                        // else if ((button_order < order_queue[i]) || (i > 0 && (order_queue[i] < order_queue[i-1]))) { //the latter secures that data is stored if desired_floor is larger than the largest value in the queue.
-                        //         insert_item(order_queue, i, button_order);
-                        //
-                        //         *status = 0;
-                        //         break;//The new order is added in the desired positon.
-                        // }
-                        // else if (button_order > order_queue[i]) {
-                        //         i++;
-                        // }
-
+                        if (button_order == order_queue[i]) {
+                                break;//Order already exists, therefore nothing is done
+                        }
+                        else if ((button_order < order_queue[i]) || (i > 0 && order_queue[i] < order_queue[i-1])) { //the latter secures that data is stored if desired_floor is larger than the largest value in the queue.
+                                insert_item(order_queue, i, button_order);
+                                *status = 0;
+                                break;//The new order is added in the desired positon.
+                        }
+                        else if (button_order > order_queue[i]) {
+                                i++;
+                        }
                 }
         }
         else if (*status == GOING_DOWN) {
@@ -45,34 +26,22 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desir
                 while(1) {
 
 
-                  if (button_order == order_queue[i]) {
-      break;//Order already exists, therefore nothing is done
-}
-else if ((button_order > order_queue[i])||(i > 0 && order_queue[i] > order_queue[i-1])) {
-      insert_item(order_queue, i, button_order);
-      *status = 1;
-      break;//The new order is added in the desired positon.
-}
-else if (button_order < order_queue[i]) {
-      i++;
-}
-                        // if (button_order == order_queue[i]) {
-                        //         break;//Order already exists, therefore nothing is done
-                        // }
-                        // else if ((button_order > order_queue[i])||(i > 0 && order_queue[i] > order_queue[i-1])) {
-                        //         insert_item(order_queue, i, button_order);
-                        //         *status = 1;
-                        //         break;//The new order is added in the desired positon.
-                        // }
-                        // else if (button_order < order_queue[i]) {
-                        //         i++;
-                        // }
-
+                        if (button_order == order_queue[i]) {
+                                break;//Order already exists, therefore nothing is done
+                        }
+                        else if ((button_order > order_queue[i])||(i > 0 && order_queue[i] > order_queue[i-1])) {
+                                insert_item(order_queue, i, button_order);
+                                *status = 1;
+                                break;//The new order is added in the desired positon.
+                        }
+                        else if (button_order < order_queue[i]) {
+                                i++;
+                        }
                 }
         }
 }
 
-void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desired_floor, int button_order){
+void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int button_order){
 
         int i = QUEUE_SIZE-1;
 
@@ -96,7 +65,7 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
 
                                 insert_item(order_queue, 0, button_order);
                                 break;
-                              }
+                        }
 
                 }
         }
@@ -133,16 +102,16 @@ void place_bt2_order( Elevator_master_information * E, int button_order){
 
         if (E->status != IDLE) {
 
-          queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
+                queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
 
 
                 on_way = is_order_on_the_way(E->current_floor, E->status, desired_floor);
                 if (on_way == 1) {
-                  printf("is on way\n");
-                        place_order_on_the_way(E->queue, &E->status, desired_floor, button_order);
+                        printf("is on way\n");
+                        place_order_on_the_way(E->queue, &E->status, button_order);
                 }
                 else if(on_way == 0) {
-                        place_order_not_on_the_way(E->queue, &E->status, desired_floor, button_order);
+                        place_order_not_on_the_way(E->queue, &E->status, button_order);
                 }
         }
         else if (E->status == IDLE) {
@@ -170,7 +139,7 @@ void place_bt0_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], 
 
                 //for every iteration, check if the order is on the way up for an elevator
                 if(E[i].status == GOING_UP && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)) {
-                        place_order_on_the_way(E[i].queue, &E[i].status, desired_floor, button_order);
+                        place_order_on_the_way(E[i].queue, &E[i].status, button_order);
                         break;
                 }
                 else if(( E[i].status == IDLE )&& ( abs(E[i].current_floor - desired_floor) < distance_from_closest_elev_to_desired_floor )) {
@@ -190,8 +159,8 @@ void place_bt0_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], 
 
                 }
                 else if((i >= length_of_elevator_array - 1) && (closest_elev == -1)) {
-                        place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, desired_floor, button_order);
-                      }
+                        place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
+                }
         }
 }
 
@@ -213,7 +182,7 @@ void place_bt1_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], 
                 //for every iteration, check if the order is on the way up for an elevator
                 if(E[i].status == GOING_DOWN && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)) {
 
-                        place_order_on_the_way(E[i].queue, &E[i].status, desired_floor, button_order);
+                        place_order_on_the_way(E[i].queue, &E[i].status, button_order);
                         break;
                 }
                 else if(( E[i].status == IDLE )&& ( abs(E[i].current_floor - desired_floor) < distance_from_closest_elev_to_desired_floor )) {
@@ -232,51 +201,51 @@ void place_bt1_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], 
                         insert_item(E[closest_elev].queue, 0, button_order);
                 }
                 else if((i == length_of_elevator_array - 1) && (closest_elev == -1)) {
-                        place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, desired_floor, button_order);
+                        place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, button_order);
                 }
         }
 }
 
 int is_order_in_global_queue(Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS], int desired_floor){
 
-  int elevatorCounter, queueCounter;
+        int elevatorCounter, queueCounter;
 
-    for (elevatorCounter = 0; elevatorCounter < MAX_NUMBER_OF_ELEVATORS; elevatorCounter++){
-      for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++){
-        if (desired_floor == E[elevatorCounter].queue[queueCounter]){
-          return 1;
+        for (elevatorCounter = 0; elevatorCounter < MAX_NUMBER_OF_ELEVATORS; elevatorCounter++) {
+                for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++) {
+                        if (desired_floor == E[elevatorCounter].queue[queueCounter]) {
+                                return 1;
+                        }
+                }
         }
-      }
-    }
-  return 0;
+        return 0;
 }
 
 int is_order_in_local_queue(Elevator_master_information E, int desired_floor){
 
-  int queue_counter;
+        int queue_counter;
 
-      for (queue_counter = 0; queue_counter < QUEUE_SIZE; queue_counter++){
-        if (desired_floor == E.queue[queue_counter]){
-          return 1;
+        for (queue_counter = 0; queue_counter < QUEUE_SIZE; queue_counter++) {
+                if (desired_floor == E.queue[queue_counter]) {
+                        return 1;
+                }
         }
-    }
-  return 0;
+        return 0;
 }
 
 void add_new_order_to_queue( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS], int desired_floor, int button_type, int elevator, int length_of_elevator_array){
 
         if (button_type == BUTTON_CALL_INTERNAL) {
-          if(is_order_in_local_queue(E[elevator], desired_floor) == 1){
+                if(is_order_in_local_queue(E[elevator], desired_floor) == 1) {
 
-            return;
-          }
-          place_bt2_order(&E[elevator], desired_floor);
+                        return;
+                }
+                place_bt2_order(&E[elevator], desired_floor);
 
         }
 
-        if(is_order_in_global_queue(E, desired_floor) == 1){
+        if(is_order_in_global_queue(E, desired_floor) == 1) {
 
-          return;
+                return;
         }
 
         if (button_type == BUTTON_CALL_UP) {

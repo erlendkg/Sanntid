@@ -129,7 +129,7 @@ void* thread_main_server(void *net_status) {
                                                                 printf("The queue is empty\n update status: 2\n");
                                                                 break;
                                                         }
-                                                        create_and_send_message(Data_elevators[elevator_id], elevator_id);
+
                                                         update_elevator_status_and_queuesize(Data_elevators[elevator_id].queue, &Data_elevators[elevator_id].status, &Data_elevators[elevator_id].queue_size, Data_elevators[elevator_id].current_floor);
 
                                                 }
@@ -140,8 +140,13 @@ void* thread_main_server(void *net_status) {
                                                                 update_lamp_matrix(lamp_matrix, button_floor-1, button_type, 1);
                                                         }
                                                 }
+
+
                                                 for(int i = 0; i < Data_elevators[99].length_of_elevator_array; i++) {
                                                         if (Data_elevators[i].status != -1) {
+
+                                                          create_and_send_message(Data_elevators[i], i);
+
                                                                 printf("\n\n******************************************\n");
                                                                 printf("Queue number: %d\t", i);
                                                                 printf("Status: %d\n", Data_elevators[i].status);

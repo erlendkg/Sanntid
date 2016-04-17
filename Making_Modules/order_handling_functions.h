@@ -25,8 +25,8 @@ typedef struct {
 
 pthread_mutex_t lock;
 
-void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desired_floor, int button_order);
-void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desired_floor, int button_order);
+void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int button_order);
+void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int button_order);
 
 void place_bt2_order( Elevator_master_information * E, int button_order);
 void place_bt1_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], int button_order, int length_of_elevator_array);
