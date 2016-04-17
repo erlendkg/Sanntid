@@ -7,7 +7,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <pthread.h>
-#include "panel_lights.h"
+
+
 
 #define QUEUE_SIZE 10
 #define MAX_NUMBER_OF_ELEVATORS 100

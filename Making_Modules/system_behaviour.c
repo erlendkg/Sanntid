@@ -41,7 +41,7 @@ int main_client(char const *server_ip) {
 }
 
 int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char const *server_ip) {
-        int queue_index,current_floor,j ;
+        int queue_index,current_floor;
         pthread_t button_input, carry_out_orders, lights;
 
         this_elevator->is_busy = 0;
@@ -51,14 +51,6 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
         }
 
         convert_lamp_matrix_to_orders(lamp_matrix, this_elevator->desired_floor);
-        /*int j, k;
-        for (j = 0; j<N_FLOORS; j++) {
-                printf("\n");
-                for (k = 0; k<2; k++) {
-                        printf("|%d|", lamp_matrix[j][k]);
-                }
-        }
-        printf("\n");*/
 
         pthread_create(&carry_out_orders, NULL, thread_single_elevator_carry_out_orders, (void* ) this_elevator);
         pthread_create(&button_input, NULL, thread_single_elevator_button_input, (void* ) this_elevator);
@@ -81,80 +73,65 @@ int single_elevator_mode(Elev_info *this_elevator, int *server_socket, char cons
 
 void* thread_single_elevator_button_input(void *this_elevator) {
 
-        int floor;
-        int i;
         Elev_info* cast_this_elevator = ((Elev_info *) this_elevator);
 
+        int floor;
+        int i,j;
+
         while(1) {
-            printf("spamnspam");
                 for(floor=0; floor<4; floor++) {
 
                         if (elev_get_button_signal(2, floor) == 1) {
-                                inner_button_light_switch(floor,1);
-                                pthread_mutex_lock(&elev_info_lock);
-                                cast_this_elevator->button_floor = (floor );
-                                cast_this_elevator->button_type = 2;
-                                cast_this_elevator->button_click = 1;
-
-                                int j;
-                                for (j = 0; j<10; j++) {
-                                        printf("%d,",cast_this_elevator->desired_floor[j]);
+                                for(j = 0; j < 10; j++) {
+                                        printf("%d,", cast_this_elevator->desired_floor[j]);
                                 }
                                 printf("\n");
+                                if(cast_this_elevator->desired_floor[0] != floor+1) {
+                                        inner_button_light_switch(floor,1);
+                                        pthread_mutex_lock(&elev_info_lock);
 
-                                for (i = 0; i < 10; i++) {
-                                  printf("i = %d\n", i);
-                                        if(cast_this_elevator->desired_floor[i] == floor+1) {
-                                          printf("var fra før\n");
-                                                break;
+                                        for (i = 0; i < 10; i++) {
+                                                if(cast_this_elevator->desired_floor[i] == 0) {
+                                                        cast_this_elevator->desired_floor[i] = floor+1;
+                                                        break;
+                                                }
                                         }
-                                        else if(cast_this_elevator->desired_floor[i] == 0) {
-                                                cast_this_elevator->desired_floor[i] = floor+1;
-                                                printf("legger inn på pos: %d\n", i);
-
-                                                pthread_mutex_unlock(&elev_info_lock);
-                                                sleep(1);
-                                                break;
-                                        }
+                                        pthread_mutex_unlock(&elev_info_lock);
+                                        sleep(1);
                                 }
                         }
                         if (elev_get_button_signal(1, floor) == 1) {
-                                update_lamp_matrix(lamp_matrix, floor, 1,1);
-                                pthread_mutex_lock(&elev_info_lock);
-                                cast_this_elevator->button_floor = (floor );
-                                cast_this_elevator->button_type = 1;
-                                cast_this_elevator->button_click = 1;
-                                for (i = 0; i < 10; i++) {
-                                        if(cast_this_elevator->desired_floor[i] == floor) {
-                                                break;
-                                        }
-                                        if(cast_this_elevator->desired_floor[i] == 0) {
-                                                cast_this_elevator->desired_floor[i] = floor+1;
-                                                pthread_mutex_unlock(&elev_info_lock);
-                                                sleep(1);
-                                                break;
+                                if(cast_this_elevator->desired_floor[0] != floor+1) {
 
+                                        update_lamp_matrix(lamp_matrix, floor, 1,1);
+                                        pthread_mutex_lock(&elev_info_lock);
+                                        for (i = 0; i < 10; i++) {
+
+                                                if(cast_this_elevator->desired_floor[i] == 0) {
+                                                        cast_this_elevator->desired_floor[i] = floor+1;
+                                                        break;
+                                                }
                                         }
+                                        pthread_mutex_unlock(&elev_info_lock);
+                                        sleep(1);
                                 }
                         }
                         if (elev_get_button_signal(0, floor) == 1) {
-                                update_lamp_matrix(lamp_matrix, floor, 0,1);
-                                pthread_mutex_lock(&elev_info_lock);
-                                cast_this_elevator->button_floor = (floor );
-                                cast_this_elevator->button_type = 0;
-                                cast_this_elevator->button_click = 1;
-                                for (i = 0; i < 10; i++) {
-                                        if(cast_this_elevator->desired_floor[i] == floor) {
-                                                break;
-                                        }
-                                        if(cast_this_elevator->desired_floor[i] == 0) {
-                                                cast_this_elevator->desired_floor[i] = floor+1;
-                                                pthread_mutex_unlock(&elev_info_lock);
-                                                sleep(1);
-                                                break;
+                                if(cast_this_elevator->desired_floor[0] != floor+1) {
+                                        update_lamp_matrix(lamp_matrix, floor, 0,1);
+                                        pthread_mutex_lock(&elev_info_lock);
 
+                                        for (i = 0; i < 10; i++) {
+                                                if(cast_this_elevator->desired_floor[i] == 0) {
+                                                        cast_this_elevator->desired_floor[i] = floor+1;
+                                                        break;
+                                                }
                                         }
+
+                                        pthread_mutex_unlock(&elev_info_lock);
+                                        sleep(1);
                                 }
+
                         }
                 }
         }
@@ -162,7 +139,7 @@ void* thread_single_elevator_button_input(void *this_elevator) {
 
 void* thread_single_elevator_carry_out_orders(void *this_elevator) {
 
-        int i;
+        int first_position_in_array = 0;
         Elev_info *cast_this_elevator = (Elev_info *) this_elevator;
 
         cast_this_elevator->is_busy = 0;
@@ -170,24 +147,21 @@ void* thread_single_elevator_carry_out_orders(void *this_elevator) {
         while(1) {
                 if(cast_this_elevator->is_busy == 0) {
                         cast_this_elevator->is_busy = 1;
-                                if(cast_this_elevator->desired_floor[0] != 0) {
-                                        go_to_floor(&cast_this_elevator->desired_floor[0]);
-                                        inner_button_light_switch(cast_this_elevator->desired_floor[0],0);
-                                        update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0],0,0);
-                                        update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0],1,0);
-
-                                }
-                                if(cast_this_elevator->desired_floor[0] == cast_this_elevator->current_floor) {
-                                        hold_doors_open(1);
-                                        inner_button_light_switch(cast_this_elevator->desired_floor[0],0);
-                                        update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0],0,0);
-                                        update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0],1,0);
-                                        remove_item_from_queue(cast_this_elevator->desired_floor, 0);
-                                         
-
-                                }
+                        if(cast_this_elevator->desired_floor[0] != 0) {
+                                go_to_floor(&cast_this_elevator->desired_floor[0]);
+                                inner_button_light_switch(cast_this_elevator->desired_floor[0]-1, OFF);
+                                update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0]-1,BUTTON_CALL_UP, OFF);
+                                update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0]-1,BUTTON_CALL_DOWN, OFF);
                         }
-                        cast_this_elevator->is_busy = 0;
+                        if(cast_this_elevator->desired_floor[0] == cast_this_elevator->current_floor) {
+                                hold_doors_open(DOORS_OPEN_DURATION);
+                                inner_button_light_switch(cast_this_elevator->desired_floor[0]-1, OFF);
+                                update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0]-1,BUTTON_CALL_UP, OFF);
+                                update_lamp_matrix(lamp_matrix, cast_this_elevator->desired_floor[0]-1,BUTTON_CALL_DOWN, OFF);
+                                remove_item_from_queue(cast_this_elevator->desired_floor, first_position_in_array);
+                        }
+                }
+                cast_this_elevator->is_busy = 0;
         }
         return NULL;
 }
@@ -260,7 +234,7 @@ void* recieve_messages_from_server(void* this_elevator) {
 
                                 } else if(new_desired_floor == my_this_elevator->current_floor) {
 
-                                        hold_doors_open(1);
+                                        hold_doors_open(DOORS_OPEN_DURATION);
                                         inner_button_light_switch(new_desired_floor-1,0);
 
                                         memset(message,0,MAX_MESSAGE_SIZE);
@@ -290,7 +264,7 @@ void* thread_carry_out_orders(void* this_elevator) {
                         inner_button_light_switch(my_this_elevator->desired_floor[0]-1,0);
 
                         pthread_mutex_lock(&doors_open_lock);
-                        hold_doors_open(1);
+                        hold_doors_open(DOORS_OPEN_DURATION);
                         pthread_mutex_unlock(&doors_open_lock);
 
                         my_this_elevator->current_floor = return_current_floor();
@@ -417,27 +391,28 @@ void* thread_main_server(void *net_status) {
 
         while(1) {
 
+          FD_ZERO(&readfds);
+          timeout.tv_sec = 20;
+          timeout.tv_usec = 5;
+          max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
+
                 for(elev_counter = 0; elev_counter < MAX_NUMBER_OF_ELEVS; elev_counter++) {
                         if(my_net_status->client_sockets[elev_counter] != 0) {
                                 clock_gettime(CLOCK_MONOTONIC, &start[elev_counter][1]);
 
                                 if(is_client_timed_out(start[elev_counter][1], start[elev_counter][0]) == 1) {
 
-                                  getpeername(my_net_status->client_sockets[elev_counter], (struct sockaddr*)&address, (socklen_t*)&addrlen);
-                                  printf("Client timeout , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
-                                  disable_elevator_and_distribute_queue_to_other_elevators(Data_elevators, my_net_status->client_sockets[elev_counter]);
-                                  close(my_net_status->client_sockets[elev_counter]);
-                                  my_net_status->client_sockets[elev_counter] = 0;
-                                  my_net_status->active_connections -= 1;
-                                  printf("Timeout socket\n");
+                                        getpeername(my_net_status->client_sockets[elev_counter], (struct sockaddr*)&address, (socklen_t*)&addrlen);
+                                        printf("Client timeout , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+                                        disable_elevator_and_distribute_queue_to_other_elevators(Data_elevators, my_net_status->client_sockets[elev_counter]);
+                                        close(my_net_status->client_sockets[elev_counter]);
+                                        FD_CLR(my_net_status->client_sockets[elev_counter], &readfds);
+                                        my_net_status->client_sockets[elev_counter] = 0;
+                                        my_net_status->active_connections -= 1;
+                                        printf("Timeout socket\n");
                                 }
                         }
                 }
-
-                FD_ZERO(&readfds);
-                timeout.tv_sec = 20;
-                timeout.tv_usec = 5;
-                max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
 
                 if((activity = select(max_sd +1, &readfds, NULL, NULL, &timeout)) == 0) {
                         printf("Timeout: server has most likely lost it's connection to the clients\n");
@@ -457,10 +432,10 @@ void* thread_main_server(void *net_status) {
                                         Data_elevators[new_queue_number].socket = new_socket;
                                         send(Data_elevators[new_queue_number].socket, &new_queue_number, sizeof(new_queue_number), 0);
                                         for(elev_counter = 0; elev_counter < MAX_NUMBER_OF_ELEVS; elev_counter++) {
-                                          if(my_net_status->client_sockets[elev_counter] == new_socket) {
-                                            clock_gettime(CLOCK_MONOTONIC, &start[elev_counter][0]);
-                                            break;
-                                          }
+                                                if(my_net_status->client_sockets[elev_counter] == new_socket) {
+                                                        clock_gettime(CLOCK_MONOTONIC, &start[elev_counter][0]);
+                                                        break;
+                                                }
                                         }
                                 }
                         }
@@ -475,6 +450,7 @@ void* thread_main_server(void *net_status) {
                                                 getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
                                                 printf("Client disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
                                                 close(sd);
+                                                FD_CLR(sd, &readfds);
                                                 my_net_status->client_sockets[elev_counter] = 0;
                                                 my_net_status->active_connections -= 1;
                                         }

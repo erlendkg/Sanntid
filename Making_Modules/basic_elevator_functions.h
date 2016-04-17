@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include "elev.h"
+
+#define DOORS_OPEN_DURATION 1
+
 
 typedef struct {
         int button_floor;

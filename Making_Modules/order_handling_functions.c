@@ -4,7 +4,7 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desir
 
         int i = 0;
 
-        if (*status == 0 ) {
+        if (*status == GOING_UP ) {
 
                 while(1) {
 
@@ -22,7 +22,7 @@ void place_order_on_the_way(int order_queue[QUEUE_SIZE], int * status, int desir
 
                 }
         }
-        else if (*status == 1) {
+        else if (*status == GOING_DOWN) {
 
                 while(1) {
 
@@ -46,7 +46,7 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
 
         int i = QUEUE_SIZE-1;
 
-        if (*status == 0 ) {
+        if (*status == GOING_UP ) {
 
                 while(1) {
 
@@ -64,13 +64,13 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
                         }
                         else if (desired_floor < order_queue[i]) {
                                 insert_item(order_queue, i+1, button_order);
-                                *status = 0;
+                                *status = GOING_UP;
                                 break;//The new order is added in the desired positon.
                         }
 
                 }
         }
-        if (*status == 1) {
+        if (*status == GOING_DOWN) {
 
                 while(1) {
                         if (i == 0){
@@ -87,7 +87,7 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
                         }
                         else if (button_order > order_queue[i]) {
                                 insert_item(order_queue, i+1, button_order);
-                                *status = 1;
+                                *status = GOING_DOWN;
                                 break;//The new order is added in the desired positon.
                         }
 
@@ -101,7 +101,7 @@ void place_bt2_order( Elevator_data * E, int button_order){
         int desired_floor, button_type;
 
 
-        if (E->status != 2) {
+        if (E->status != IDLE) {
 
           queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
 
@@ -114,7 +114,7 @@ void place_bt2_order( Elevator_data * E, int button_order){
                         place_order_not_on_the_way(E->queue, &E->status, desired_floor, button_order);
                 }
         }
-        else if (E->status == 2) {
+        else if (E->status == IDLE) {
 
                 insert_item(E->queue, 0, button_order);
                 //update_elevator_status_and_queuesize(E->queue, &E->status, &E->queue_size, E->current_floor);
@@ -124,7 +124,7 @@ void place_bt2_order( Elevator_data * E, int button_order){
 void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_order, int length_of_elevator_array){
 
         int closest_elev = -1;
-        int closeness = 9999;
+        int distance_from_closest_elev_to_desired_floor = 9999;
         int smallest_queue = 9999;
         int smallest_elev;
 
@@ -138,13 +138,12 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
                 i = i + is_elevator_disabled(E[i].status);
 
                 //for every iteration, check if the order is on the way up for an elevator
-                if(E[i].status == 0 && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)) {
-                    printf("on the way\n");
+                if(E[i].status == GOING_UP && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)) {
                         place_order_on_the_way(E[i].queue, &E[i].status, desired_floor, button_order);
                         break;
                 }
-                else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - desired_floor) < closeness )) {
-                        closeness = abs(E[i].current_floor - desired_floor);
+                else if(( E[i].status == IDLE )&& ( abs(E[i].current_floor - desired_floor) < distance_from_closest_elev_to_desired_floor )) {
+                        distance_from_closest_elev_to_desired_floor = abs(E[i].current_floor - desired_floor);
                         closest_elev = i;
                 }
 
@@ -157,41 +156,37 @@ void place_bt0_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
                 //the order was not on the way for any elevators,
                 if((i >= length_of_elevator_array - 1) && (closest_elev != -1)) {
                         insert_item(E[closest_elev].queue, 0, button_order);
-                        //update_elevator_status_and_queuesize(E[i].queue, &E[i].status, &E[i].queue_size, E[i].current_floor);
+
                 }
                 else if((i >= length_of_elevator_array - 1) && (closest_elev == -1)) {
-                      printf("not on the way\n");
                         place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, desired_floor, button_order);
-                        //update_elevator_status_and_queuesize(E[smallest_elev].queue, &E[smallest_elev].status, &E[smallest_elev].queue_size, E[smallest_elev].current_floor);
-                }
+                      }
         }
 }
 
 void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_order, int length_of_elevator_array){
 
         int closest_elev = -1;
-        int closeness = 9999;
+        int distance_from_closest_elev_to_desired_floor = 9999;
         int smallest_queue = 9999;
         int smallest_elev;
         int desired_floor;
         int button_type;
 
         queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
-        printf("button order: %d, DF: %d, BT: %d\n", button_order, desired_floor, button_type);
 
         for(int i = 0; i < length_of_elevator_array; i++) {
                 //Check if the elevator is disabled, jump over it if it is.
                 i = i + is_elevator_disabled(E[i].status);
 
                 //for every iteration, check if the order is on the way up for an elevator
-                if(E[i].status == 1 && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)) {
+                if(E[i].status == GOING_DOWN && is_order_on_the_way(E[i].current_floor, E[i].status, desired_floor)) {
 
                         place_order_on_the_way(E[i].queue, &E[i].status, desired_floor, button_order);
-                        printf("**********\nPlasserte on the way\n");
                         break;
                 }
-                else if(( E[i].status == 2 )&& ( abs(E[i].current_floor - desired_floor) < closeness )) {
-                        closeness = abs(E[i].current_floor - desired_floor);
+                else if(( E[i].status == IDLE )&& ( abs(E[i].current_floor - desired_floor) < distance_from_closest_elev_to_desired_floor )) {
+                        distance_from_closest_elev_to_desired_floor = abs(E[i].current_floor - desired_floor);
                         closest_elev = i;
                 }
 
@@ -204,12 +199,9 @@ void place_bt1_order( Elevator_data E[MAX_NUMBER_OF_ELEVATORS-1], int button_ord
                 //the order was not on the way for any elevators,
                 if((i == length_of_elevator_array - 1) && (closest_elev != -1)) {
                         insert_item(E[closest_elev].queue, 0, button_order);
-                        printf("**********\nPlasserte in empty\n");
                 }
                 else if((i == length_of_elevator_array - 1) && (closest_elev == -1)) {
-                        printf("queue1 : %d\n", E[smallest_elev].queue[0]);
                         place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, desired_floor, button_order);
-                        printf("**********\nPlasserte not on the way, jesus is the way\n");
                 }
         }
 }
@@ -230,19 +222,19 @@ int is_order_in_global_queue(Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desir
 
 int is_order_in_local_queue(Elevator_data E, int desired_floor){
 
-  int queueCounter;
+  int queue_counter;
 
-      for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++){
-        if (desired_floor == E.queue[queueCounter]){
+      for (queue_counter = 0; queue_counter < QUEUE_SIZE; queue_counter++){
+        if (desired_floor == E.queue[queue_counter]){
           return 1;
         }
     }
   return 0;
 }
 
-void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desired_floor, int buttonType, int elevator, int length_of_elevator_array){
+void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desired_floor, int button_type, int elevator, int length_of_elevator_array){
 
-        if (buttonType == 2) {
+        if (button_type == BUTTON_CALL_INTERNAL) {
           if(is_order_in_local_queue(E[elevator], desired_floor) == 1){
 
             return;
@@ -256,12 +248,12 @@ void add_new_order_to_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int desir
           return;
         }
 
-        if (buttonType == 0) {
+        if (button_type == BUTTON_CALL_UP) {
 
                 place_bt0_order(E, desired_floor, length_of_elevator_array);
 
         }
-        else if (buttonType == 1) {
+        else if (button_type == BUTTON_CALL_DOWN) {
 
                 place_bt1_order(E, desired_floor, length_of_elevator_array);
 
@@ -273,7 +265,7 @@ int assign_number_to_new_elevator( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int
         int i;
 
         for(i = 0; i<numberOfElevators; i++) {
-                if (E[i].status == -1) {
+                if (E[i].status == DISABLED) {
                         return i;
                 }
         }
@@ -285,10 +277,9 @@ void activate_single_queue( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int elevat
         size_t l = QUEUE_SIZE * sizeof (E[elevatorNumber].queue[0]);
         flush_order_queue(E[elevatorNumber].queue,l);
 
-        E[elevatorNumber].status = 2;
+        E[elevatorNumber].status = IDLE;
         E[elevatorNumber].queue_size = 0;
         E[elevatorNumber].current_floor = 1;
-        E[elevatorNumber].last_order = 0;
 
 }
 
@@ -300,31 +291,31 @@ void initiate_queues( Elevator_data E[MAX_NUMBER_OF_ELEVATORS]){
         }
 }
 
-void disable_elevator_and_distribute_queue_to_other_elevators( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int disconnectedSocket){
+void disable_elevator_and_distribute_queue_to_other_elevators( Elevator_data E[MAX_NUMBER_OF_ELEVATORS], int disconnected_socket){
 
         pthread_mutex_lock(&lock);
 
-        int queueCounter = 0,elevCounter = 0, crashedElev;
+        int queue_counter,elev_counter, crashed_elev;
         int length_of_elevator_array = E[99].length_of_elevator_array;
 
         while(1) {
-                if (E[elevCounter].socket == disconnectedSocket) {
-                        crashedElev = elevCounter;
+                if (E[elev_counter].socket == disconnected_socket) {
+                        crashed_elev = elev_counter;
                         break;
                 }
-                elevCounter++;
+                elev_counter++;
         }
 
-        E[crashedElev].status = -1;
+        E[crashed_elev].status = DISABLED;
 
-        while (E[crashedElev].queue[queueCounter] != 0) {
+        while (E[crashed_elev].queue[queue_counter] != 0) {
 
-                add_new_order_to_queue(E,E[crashedElev].queue[queueCounter],0,0,length_of_elevator_array);
+                add_new_order_to_queue(E,E[crashed_elev].queue[queue_counter],0,0,length_of_elevator_array);
 
-                queueCounter++;
+                queue_counter++;
         }
 
-        if (crashedElev == length_of_elevator_array - 1) {
+        if (crashed_elev == length_of_elevator_array - 1) {
                 E[99].length_of_elevator_array--;
         }
 
@@ -335,7 +326,7 @@ int is_order_on_the_way(int current_floor, int status, int desired_floor){
 
         int rel_pos = desired_floor- current_floor;
 
-        if ((status == 0 && rel_pos > 0)||(status == 1 && rel_pos < 0)) {
+        if ((status == GOING_UP && rel_pos > 0)||(status == GOING_DOWN && rel_pos < 0)) {
                 return 1; //yes order is on the way
         }
         else {
@@ -345,7 +336,7 @@ int is_order_on_the_way(int current_floor, int status, int desired_floor){
 
 int is_elevator_disabled(int status){
 
-        if (status == -1) {
+        if (status == DISABLED) {
                 return 1;
         }
         else {return 0; }
@@ -364,14 +355,14 @@ void update_elevator_status_and_queuesize(int order_queue[QUEUE_SIZE], int * sta
 
 
         if (queue_instance == 0) {
-                *status = 2;
+                *status = IDLE;
         }
         else if (current_floor > floor_in_queue) {
 
-                *status = 1;
+                *status = GOING_DOWN;
         }
         else if (current_floor < floor_in_queue) {
-                *status = 0;
+                *status = GOING_UP;
         }
 
         for (int i = 0; i < QUEUE_SIZE; i++) {

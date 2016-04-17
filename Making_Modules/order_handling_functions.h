@@ -4,6 +4,15 @@
 #include "basic_queue_functions.h"
 #include "message_handling.h"
 
+#define GOING_UP 0
+#define GOING_DOWN 1
+#define IDLE 2
+#define DISABLED -1
+
+#define BUTTON_CALL_UP 0
+#define BUTTON_CALL_DOWN 1
+#define BUTTON_CALL_INTERNAL 2
+
 typedef struct {
         int queue[QUEUE_SIZE];
         int queue_size;

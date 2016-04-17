@@ -2,6 +2,8 @@
 #define BASIC_LIGHT_FUNCTIONS_H_DEF
 
 #include "elev.h"
+#define ON 1
+#define OFF 0
 
 int inner_button_light_switch(int floor, int value);
 int button_up_light_switch(int floor, int type);
