@@ -112,6 +112,7 @@ int accept_client(Network_status *net_status, int *new_socket_pointer) {
         int i;
         struct sockaddr_in address;
         int addrlen = sizeof address;
+        struct timeval timeout;
 
         if((new_socket = accept(net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
                 perror("accept");
@@ -123,11 +124,12 @@ int accept_client(Network_status *net_status, int *new_socket_pointer) {
 
         for (i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
                 if( net_status->client_sockets[i] == 0 ) {
+
                         net_status->client_sockets[i] = new_socket;
                         net_status->active_connections += 1;
                         printf("Adding to list of sockets as %d\n", i);
                         *new_socket_pointer = new_socket;
-                        break;
+                        return 0;
                 }
         }
         return 0;

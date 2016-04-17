@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <time.h>
 
 #define PORT "3492"
 #define MAX_NUMBER_OF_ELEVS 3
@@ -25,6 +26,11 @@ typedef struct {
         int client_sockets[MAX_NUMBER_OF_ELEVS];
         int master_socket;
 } Network_status;
+
+typedef struct {
+  clock_t start;
+  clock_t stop;
+} Timeout;
 
 int initialize_server_socket();
 int initialize_client_socket(char const *server_ip);

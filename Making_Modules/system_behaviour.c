@@ -202,8 +202,6 @@ void network_elevator_mode(Elev_info *this_elevator, char const *server_ip) {
         pthread_t button_input, main_client, orders, lights;
         int server_socket = this_elevator->server_socket;
 
-        // this_elevator->desired_floor[0] = 1;
-
         pthread_create(&main_client, NULL, recieve_messages_from_server, (void*) this_elevator);
         pthread_create(&button_input, NULL, thread_network_listen_for_button, (void*) this_elevator);
         pthread_create(&orders, NULL, thread_carry_out_orders, (void*) this_elevator);
@@ -224,6 +222,8 @@ void* recieve_messages_from_server(void* this_elevator) {
         Elev_info* my_this_elevator = ((Elev_info *) this_elevator);
         char message[MAX_MESSAGE_SIZE];
         int elevator_id, new_desired_floor = -1;
+        clock_t start, stop;
+        double dt;
 
         if(recv(my_this_elevator->server_socket, &elevator_id, sizeof(int),0) == 0) {
                 printf("Disconnected from server\n");
@@ -233,10 +233,25 @@ void* recieve_messages_from_server(void* this_elevator) {
         printf("My number is %d\n\n", elevator_id);
         memset(message,0,sizeof(message));
 
+        start = clock();
+
         while(1) {
+                stop = clock();
+                dt = (double)(stop - start)/(CLOCKS_PER_SEC*2);
+                printf("dt: %f\n", dt);
+                if(dt > 10) {
+                        sprintf(message, "<5E%d>", my_this_elevator->num);
+                        send(my_this_elevator->server_socket, message, MAX_MESSAGE_SIZE, 0);
+                        printf("Sent ACK\n");
+                        memset(message,0,MAX_MESSAGE_SIZE);
+                        start = clock();
+
+                }
 
                 if (listen_for_message_from_master(message, my_this_elevator->server_socket, MAX_MESSAGE_SIZE) == -1) {
                         printf("Disconnected from master\n");
+                        close(my_this_elevator->server_socket);
+                        my_this_elevator->is_connected_to_network = 0;
                         return NULL;
                 } else {
                         if((message[0] - '0')  == 3) {
@@ -264,18 +279,6 @@ void* recieve_messages_from_server(void* this_elevator) {
                                 memset(message,0,MAX_MESSAGE_SIZE);
                         }
                 }
-
-                //current_floor = return_current_floor();
-
-                // if(((my_this_elevator->current_floor != current_floor) && (current_floor != -1)) || open_doors_on_current_floor == 1) {
-                //   open_doors_on_current_floor = 0;
-                //   memset(message,0,sizeof(message));
-                //   my_this_elevator->current_floor = current_floor;
-                //   sprintf(message, "<1E%dF%d>", my_this_elevator->num, my_this_elevator->current_floor);
-                //   printf("Sending message: %s\n", message);
-                //   send(my_this_elevator->server_socket, message, MAX_MESSAGE_SIZE, 0);
-                //   memset(message,0,sizeof(message));
-                // }
         }
 }
 
@@ -396,22 +399,20 @@ int main_server() {
 
 void* thread_main_server(void *net_status) {
 
-        pthread_t send_order_to_elevator;
         Network_status *my_net_status = (Network_status *) net_status;
+        pthread_t send_order_to_elevator;
         struct sockaddr_in address;
-        int max_sd, sd, activity;
-        int new_socket, new_queue_number;
+        int max_sd, sd, activity, new_socket, new_queue_number;
         int valread, i;
         fd_set readfds;
         int addrlen = sizeof address;
         int message_type, elevator_id, current_floor, button_type, button_floor, queue_message;
-        struct timeval timeout;
-        timeout.tv_sec = 30;
-        timeout.tv_usec = 0;
-
         char buffer[MAX_MESSAGE_SIZE];
         char return_message[MAX_MESSAGE_SIZE];
         Elevator_data Data_elevators[MAX_NUMBER_OF_ELEVATORS];
+        struct timeval timeout;
+        Timeout clocks[MAX_NUMBER_OF_ELEVATORS];
+        double dt;
 
         initiate_queues(Data_elevators);
 
@@ -423,17 +424,30 @@ void* thread_main_server(void *net_status) {
         }
 
         while(1) {
-                FD_ZERO(&readfds);
 
+                for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+                        if(my_net_status->client_sockets[i] != 0) {
+                                clocks[i].stop = clock();
+                                dt = (double) (clocks[i].stop - clocks[i].start)/(CLOCKS_PER_SEC*2);
+                                printf("Dt: %f", dt);
+                                printf("Clocks: stop %ld, start %ld", clocks[i].stop,clocks[i].start);
+                                if(dt > 15) {
+                                printf("Timeout socket\n");
+                                }
+                        }
+                }
+
+                FD_ZERO(&readfds);
+                timeout.tv_sec = 20;
+                timeout.tv_usec = 5;
                 max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
 
-                if((activity = select(max_sd +1, &readfds, NULL, NULL, NULL)) == 0) {
+                if((activity = select(max_sd +1, &readfds, NULL, NULL, &timeout)) == 0) {
                         printf("Timeout: server has most likely lost it's connection to the clients\n");
                         printf("Please check your network connection and restart the server");
                         exit(1);
                 }
                 else {
-
                         if(FD_ISSET(my_net_status->master_socket, &readfds)) {
                                 if (accept_client(my_net_status, &new_socket) == -1) {
                                         printf("Failed to accept client\n");
@@ -450,21 +464,21 @@ void* thread_main_server(void *net_status) {
                         }
                         for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
                                 sd = my_net_status->client_sockets[i];
+
                                 if(FD_ISSET(sd, &readfds)) {
                                         if((valread = recv(sd, &buffer, sizeof(buffer),0)) <= 0) {
                                                 getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
                                                 printf("Client disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 
                                                 disable_elevator_and_distribute_queue_to_other_elevators(Data_elevators, sd);
-                                                //Close the socket and mark as 0 in list for reuse
                                                 close(sd);
                                                 my_net_status->client_sockets[i] = 0;
                                                 my_net_status->active_connections -= 1;
                                         }
-                                        else{
+                                        else {
                                                 printf("\n\nMottatt meldingen %s på socket %d\n",buffer, sd );
-
                                                 message_type = buffer[1] - '0';
+                                                clocks[i].start = clock();
 
                                                 printf("Messagetype is: %d\n", message_type);
 
