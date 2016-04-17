@@ -112,7 +112,6 @@ int accept_client(Network_status *net_status, int *new_socket_pointer) {
         int i;
         struct sockaddr_in address;
         int addrlen = sizeof address;
-        struct timeval timeout;
 
         if((new_socket = accept(net_status->master_socket, (struct sockaddr *) &address, (socklen_t *)&addrlen)) <0) {
                 perror("accept");
@@ -183,4 +182,16 @@ int listen_for_message_from_master(char *buffer, int master_socket, int buffer_s
                         return -1;
                 }
         }
+}
+
+int is_client_timed_out(struct timespec time_now, struct timespec time_at_last_message) {
+  double time_since_last_message;
+
+  time_since_last_message = time_now.tv_sec - time_at_last_message.tv_sec;
+
+  if(time_since_last_message > CLIENT_TIMEOUT_LIMIT) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
