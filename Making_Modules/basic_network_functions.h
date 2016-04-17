@@ -29,8 +29,8 @@ typedef struct {
 } Network_status;
 
 typedef struct {
-  clock_t start;
-  clock_t stop;
+        clock_t start;
+        clock_t stop;
 } Timeout;
 
 int initialize_server_socket();

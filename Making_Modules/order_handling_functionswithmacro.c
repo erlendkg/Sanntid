@@ -73,7 +73,7 @@ void place_order_not_on_the_way(int order_queue[QUEUE_SIZE], int * status, int d
 
                 while(1) {
 
-                        if (i == 0){
+                        if (i == 0) {
 
                                 insert_item(order_queue, 0, button_order);
                                 break;
@@ -102,7 +102,7 @@ void place_bt2_order( Elevator_master_information * E, int button_order){
 
         if (E->status != IDLE) {
 
-          queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
+                queue_format_to_floor_and_button(button_order, &desired_floor, &button_type);
 
 
                 on_way = is_order_on_the_way(E->current_floor, E->status, desired_floor);
@@ -159,7 +159,7 @@ void place_bt0_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], 
                 }
                 else if((i >= length_of_elevator_array - 1) && (closest_elev == -1)) {
                         place_order_not_on_the_way(E[smallest_elev].queue, &E[smallest_elev].status, desired_floor, button_order);
-                      }
+                }
         }
 }
 
@@ -207,44 +207,44 @@ void place_bt1_order( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS-1], 
 
 int is_order_in_global_queue(Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS], int desired_floor){
 
-  int elevatorCounter, queueCounter;
+        int elevatorCounter, queueCounter;
 
-    for (elevatorCounter = 0; elevatorCounter < MAX_NUMBER_OF_ELEVATORS; elevatorCounter++){
-      for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++){
-        if (desired_floor == E[elevatorCounter].queue[queueCounter]){
-          return 1;
+        for (elevatorCounter = 0; elevatorCounter < MAX_NUMBER_OF_ELEVATORS; elevatorCounter++) {
+                for (queueCounter = 0; queueCounter < QUEUE_SIZE; queueCounter++) {
+                        if (desired_floor == E[elevatorCounter].queue[queueCounter]) {
+                                return 1;
+                        }
+                }
         }
-      }
-    }
-  return 0;
+        return 0;
 }
 
 int is_order_in_local_queue(Elevator_master_information E, int desired_floor){
 
-  int queue_counter;
+        int queue_counter;
 
-      for (queue_counter = 0; queue_counter < QUEUE_SIZE; queue_counter++){
-        if (desired_floor == E.queue[queue_counter]){
-          return 1;
+        for (queue_counter = 0; queue_counter < QUEUE_SIZE; queue_counter++) {
+                if (desired_floor == E.queue[queue_counter]) {
+                        return 1;
+                }
         }
-    }
-  return 0;
+        return 0;
 }
 
 void add_new_order_to_queue( Elevator_master_information E[MAX_NUMBER_OF_ELEVATORS], int desired_floor, int button_type, int elevator, int length_of_elevator_array){
 
         if (button_type == BUTTON_CALL_INTERNAL) {
-          if(is_order_in_local_queue(E[elevator], desired_floor) == 1){
+                if(is_order_in_local_queue(E[elevator], desired_floor) == 1) {
 
-            return;
-          }
-          place_bt2_order(&E[elevator], desired_floor);
+                        return;
+                }
+                place_bt2_order(&E[elevator], desired_floor);
 
         }
 
-        if(is_order_in_global_queue(E, desired_floor) == 1){
+        if(is_order_in_global_queue(E, desired_floor) == 1) {
 
-          return;
+                return;
         }
 
         if (button_type == BUTTON_CALL_UP) {

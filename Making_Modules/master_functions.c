@@ -44,10 +44,10 @@ void* thread_main_server(void *net_status) {
 
         while(1) {
 
-          FD_ZERO(&readfds);
-          timeout.tv_sec = 20;
-          timeout.tv_usec = 5;
-          max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
+                FD_ZERO(&readfds);
+                timeout.tv_sec = 20;
+                timeout.tv_usec = 5;
+                max_sd = add_all_socks_to_fdlist(&readfds, my_net_status);
 
                 for(elev_counter = 0; elev_counter < MAX_NUMBER_OF_ELEVS; elev_counter++) {
                         if(my_net_status->client_sockets[elev_counter] != 0) {
@@ -145,7 +145,7 @@ void* thread_main_server(void *net_status) {
                                                 for(int i = 0; i < Data_elevators[99].length_of_elevator_array; i++) {
                                                         if (Data_elevators[i].status != -1) {
 
-                                                          create_and_send_message(Data_elevators[i], i);
+                                                                create_and_send_message(Data_elevators[i], i);
 
                                                                 printf("\n\n******************************************\n");
                                                                 printf("Queue number: %d\t", i);
