@@ -238,11 +238,9 @@ void* recieve_messages_from_server(void* this_elevator) {
         while(1) {
                 stop = clock();
                 dt = (double)(stop - start)/(CLOCKS_PER_SEC*2);
-                printf("dt: %f\n", dt);
                 if(dt > 10) {
                         sprintf(message, "<5E%d>", my_this_elevator->num);
                         send(my_this_elevator->server_socket, message, MAX_MESSAGE_SIZE, 0);
-                        printf("Sent ACK\n");
                         memset(message,0,MAX_MESSAGE_SIZE);
                         start = clock();
 
@@ -411,8 +409,8 @@ void* thread_main_server(void *net_status) {
         char return_message[MAX_MESSAGE_SIZE];
         Elevator_data Data_elevators[MAX_NUMBER_OF_ELEVATORS];
         struct timeval timeout;
-        Timeout clocks[MAX_NUMBER_OF_ELEVATORS];
         double dt;
+        struct timespec start[MAX_NUMBER_OF_ELEVS][2];
 
         initiate_queues(Data_elevators);
 
@@ -427,12 +425,18 @@ void* thread_main_server(void *net_status) {
 
                 for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
                         if(my_net_status->client_sockets[i] != 0) {
-                                clocks[i].stop = clock();
-                                dt = (double) (clocks[i].stop - clocks[i].start)/(CLOCKS_PER_SEC*2);
-                                printf("Dt: %f", dt);
-                                printf("Clocks: stop %ld, start %ld", clocks[i].stop,clocks[i].start);
+                                clock_gettime(CLOCK_MONOTONIC, &start[i][1]);
+                                dt = (start[i][1].tv_sec - start[i][0].tv_sec);
+                                dt += (start[i][1].tv_nsec - start[i][0].tv_nsec) / 1000000000.0;
+                                printf("Dt: %f\n", dt);
                                 if(dt > 15) {
-                                printf("Timeout socket\n");
+                                        getpeername(my_net_status->client_sockets[i], (struct sockaddr*)&address, (socklen_t*)&addrlen);
+                                        printf("Client timeout , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+                                        disable_elevator_and_distribute_queue_to_other_elevators(Data_elevators, my_net_status->client_sockets[i]);
+                                        close(my_net_status->client_sockets[i]);
+                                        my_net_status->client_sockets[i] = 0;
+                                        my_net_status->active_connections -= 1;
+                                        printf("Timeout socket\n");
                                 }
                         }
                 }
@@ -459,7 +463,12 @@ void* thread_main_server(void *net_status) {
                                         Data_elevators[99].length_of_elevator_array++;
                                         Data_elevators[new_queue_number].socket = new_socket;
                                         send(Data_elevators[new_queue_number].socket, &new_queue_number, sizeof(new_queue_number), 0);
-
+                                        for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
+                                          if(my_net_status->client_sockets[i] == new_socket) {
+                                            clock_gettime(CLOCK_MONOTONIC, &start[i][0]);
+                                            break;
+                                          }
+                                        }
                                 }
                         }
                         for(i = 0; i < MAX_NUMBER_OF_ELEVS; i++) {
@@ -478,8 +487,7 @@ void* thread_main_server(void *net_status) {
                                         else {
                                                 printf("\n\nMottatt meldingen %s på socket %d\n",buffer, sd );
                                                 message_type = buffer[1] - '0';
-                                                clocks[i].start = clock();
-
+                                                clock_gettime(CLOCK_MONOTONIC, &start[i][0]);
                                                 printf("Messagetype is: %d\n", message_type);
 
                                                 if (message_type == 1) {
