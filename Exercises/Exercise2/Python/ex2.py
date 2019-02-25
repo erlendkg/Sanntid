@@ -17,11 +17,11 @@ def someThreadFunction1():
 
 
     for x in xrange(1,10):
-        lock.aquire();
+        lock.aquire()
         try:
-            i = i + 1;
+            i = i + 1
         finally:
-            lock.release();
+            lock.release()
 
 def someThreadFunction2():
 
@@ -33,11 +33,11 @@ def someThreadFunction2():
 
 
     for x in xrange(1,10):
-        lock.aquire();
+        lock.aquire()
         try:
-            i = i - 1;
+            i = i - 1
         finally:
-            lock.release();
+            lock.release()
 
 
 

@@ -13,8 +13,7 @@ void* threadFunctionOne()
 
   int k = 0;
 
-  for (k = 0; k < 1000000; k++)
-  {
+  for (k = 0; k < 1000000; k++) {
     
     i++;
   }
@@ -32,8 +31,7 @@ void* threadFunctionTwo()
   pthread_mutex_lock(&lock);
   int k = 0;
 
-  for (k = 0; k < 1000000; k++)
-  {
+  for (k = 0; k < 1000000; k++) {
     i--;
   }
 

@@ -20,7 +20,7 @@ void* listening_thread_function(void* server_socket) {
 
   len = strlen(msg);
 
-while(1) {
+while(true) {
   printf("Listening for incoming connections...\n");
 
   new_sock = listen( *(int *)server_socket, BACKLOG);

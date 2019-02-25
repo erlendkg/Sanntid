@@ -8,22 +8,17 @@ import (
 )
 
 
-func goRoutineOne(i chan int){
+func goRoutineOne(i chan int) {
 
+  for k := 0; k < 1000000; k++ {
 
-for k := 0; k < 1000000; k++ {
-
-    temp :=  <-i
-    temp = temp+1
-    i <-temp
-
+      temp :=  <-i
+      temp = temp+1
+      i <-temp
+  }
 }
 
-
-
-}
-
-func goRoutineTwo(i chan int){
+func goRoutineTwo(i chan int) {
 
   for k := 0; k < 1000000; k++ {
 
@@ -32,14 +27,7 @@ func goRoutineTwo(i chan int){
     i <-temp
 
   }
-
-
-
 }
-
-
-
-
 
 func main()  {
 
